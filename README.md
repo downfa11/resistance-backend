@@ -6,6 +6,8 @@
     
 MSA Hexagonal architecture, Kafka로 microservice간의 Async IPC 통신
 
+기술스택 :  
+Spring MVC, Spring data JPA, Kafka, Redis , Vault
 
 
 예상되는 하위 도메인 분리 계획

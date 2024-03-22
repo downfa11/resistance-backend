@@ -77,7 +77,7 @@ public class MembershipController {
 
         UserDataRequestCommand command = UserDataRequestCommand.builder().
                 membershipId("") //요청을 보낸 사용자의 id인데, 여기선 그냥 때려박았다.
-                .targetIdList(Collections.singletonList(membershipId)).build();
+                .targetIdList(Collections.singletonList(Long.parseLong(membershipId))).build();
         List<userData> detail = userDataRequestUseCase.getUserData(command);
 
         return ResponseEntity.ok(detail);
@@ -86,7 +86,7 @@ public class MembershipController {
     @GetMapping("/ally/random/{membershipId}")
     ResponseEntity<List<userData>> getAllyRandom(@PathVariable String membershipId){
 
-        List<String> targetIdList = userDataRequestUseCase.getAllyRandom(membershipId);
+        List<Long> targetIdList = userDataRequestUseCase.getAllyRandom(membershipId);
 
         UserDataRequestCommand command = UserDataRequestCommand.builder().
                 membershipId(membershipId)

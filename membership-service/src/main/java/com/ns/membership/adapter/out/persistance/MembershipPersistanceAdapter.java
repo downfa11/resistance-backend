@@ -62,7 +62,8 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
 
         //Todo. 여기서 IPC 통신으로 BUSINESS에서 받아온 데이터들을 토대로 userData를 만들어와야한다.
 
-
+        entity.setFriends(friends.getFriends());
+        entity.setWantedFriends(wantedFriends.getWantedfriends());
         entity.setRefreshToken(refreshToken.getRefreshToken());
         membershipRepository.save(entity);
 

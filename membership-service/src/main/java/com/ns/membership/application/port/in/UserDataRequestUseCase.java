@@ -8,5 +8,5 @@ import java.util.List;
 public interface UserDataRequestUseCase {
     List<userData> getUserData(UserDataRequestCommand command);
 
-    List<String> getAllyRandom(String membershipId);
+    List<Long> getAllyRandom(String membershipId);
 }

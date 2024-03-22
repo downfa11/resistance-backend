@@ -26,9 +26,10 @@ public class MembershipJpaEntity {
 
     private boolean isValid;
 
-    @Transient
+    @ElementCollection
     private List<Long> friends;
-    @Transient
+
+    @ElementCollection
     private List<Long> wantedFriends;
 
     private String refreshToken;

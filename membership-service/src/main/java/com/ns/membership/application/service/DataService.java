@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Async;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,15 +40,17 @@ public class DataService implements UserDataRequestUseCase {
 
 
     @Override
+    @Async
+    @Cacheable(value="userData",key="'userData'+':'+ #command.membershipId+':'+ #command.targetIdList")
     public List<userData> getUserData(UserDataRequestCommand command) {
         try {
 
             List<SubTask> subtasklist = new ArrayList<>();
 
-            for (String membershipId : command.getTargetIdList()) {
+            for (Long membershipId : command.getTargetIdList()) {
                 SubTask subtask = SubTask.builder()
                         .subTaskName("GetMemberDataTask : " + "MembershipId validation, transfer UserData.")
-                        .membersrhipId(membershipId)
+                        .membersrhipId(membershipId.toString())
                         .taskType("membership")
                         .status("ready")
                         .data(membershipId)
@@ -96,10 +100,10 @@ public class DataService implements UserDataRequestUseCase {
 
 
     @Override
-    public List<String> getAllyRandom(String membershipId) {
+    public List<Long> getAllyRandom(String membershipId) {
         int count = 5;
         return membershipRepository.getRandomAlly(membershipId, count).stream()
-                .map(entity -> entity.getMembershipId().toString())
+                .map(entity -> entity.getMembershipId())
                 .collect(Collectors.toList());
     }
 }

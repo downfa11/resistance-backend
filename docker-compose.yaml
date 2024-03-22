@@ -85,7 +85,7 @@ services:
       - SPRING_DATA_REDIS_PASSWORD=
       - SPRING_DATA_REDIS_PORT=
       - SPRING_DATA_REDIS_REPOSITORIES_ENABLED=false
-      - EXPIRE_DEFAULTTIME=18000
+      - EXPIRE_DEFAULTTIME=18000 # 친구목록의 캐싱은 만료시간이 길다
 
   dedicated-service:
     image: dedicated-service:1.0.0
@@ -109,7 +109,7 @@ services:
       - SPRING_DATA_REDIS_PASSWORD=
       - SPRING_DATA_REDIS_PORT=
       - SPRING_DATA_REDIS_REPOSITORIES_ENABLED=false
-      - EXPIRE_DEFAULTTIME=180000
+      - EXPIRE_DEFAULTTIME=18000 # 사실 게시글의 캐시도 길어도 된다. 바뀔 일이 잘없음.
 
   business-service:
     image: business-service:1.0.0
@@ -133,7 +133,7 @@ services:
       - SPRING_DATA_REDIS_PASSWORD=
       - SPRING_DATA_REDIS_PORT=
       - SPRING_DATA_REDIS_REPOSITORIES_ENABLED=false
-      - EXPIRE_DEFAULTTIME=18000
+      - EXPIRE_DEFAULTTIME=18000 #너는 좀 짧아야한다.
 
   logging-service:
     image: logging-service:1.0.0

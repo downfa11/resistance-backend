@@ -12,15 +12,14 @@ import com.ns.membership.application.port.in.RegisterMembershipUseCase;
 import com.ns.membership.application.port.in.command.FindMembershipCommand;
 import com.ns.membership.application.port.in.command.ModifyMembershipCommand;
 import com.ns.membership.application.port.in.command.RegisterMembershipCommand;
-import com.ns.membership.application.port.in.command.UserDataRequestCommand;
 import com.ns.membership.application.port.out.FindMembershipPort;
 import com.ns.membership.application.port.out.ModifyMembershipPort;
 import com.ns.membership.application.port.out.RegisterMembershipPort;
 import com.ns.membership.application.port.out.SendTaskPort;
 import com.ns.membership.domain.Membership;
-import com.ns.membership.domain.userData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -93,6 +92,7 @@ public class MembershipService implements RegisterMembershipUseCase, ModifyMembe
 
     @Override
     @Transactional
+    @CacheEvict(value="userData", key="'userData'+':'+ #command.membershipId+':'+ #command.targetIdList",allEntries = true)
     public Membership modifyMembership(ModifyMembershipCommand command) {
 
         // db는 외부 시스템이라 이용하기 위해선 port, adapter를 통해서 나갈 수 있다.
@@ -105,7 +105,6 @@ public class MembershipService implements RegisterMembershipUseCase, ModifyMembe
 
                 new Membership.Friends(command.getFriends()),
                 new Membership.WantedFriends(command.getWantedFriends()),
-
                 new Membership.RefreshToken(command.getRefreshToken())
         );
 
@@ -119,5 +118,7 @@ public class MembershipService implements RegisterMembershipUseCase, ModifyMembe
         MembershipJpaEntity entity = findMembershipPort.findMembership(new Membership.MembershipId(command.getMembershipId()));
         return membershipMapper.mapToDomainEntity(entity);
     }
+
+
 
 }

@@ -19,9 +19,9 @@ public class UserDataRequestCommand extends SelfValidating<UserDataRequestComman
     @NotNull private final String membershipId;
 
     @NotNull
-    private final List<String> targetIdList;
+    private final List<Long> targetIdList;
 
-    public UserDataRequestCommand(String membershipId,List<String> targetIdList) {
+    public UserDataRequestCommand(String membershipId,List<Long> targetIdList) {
         this.membershipId=membershipId;
         this.targetIdList = targetIdList;
         this.validateSelf();

@@ -84,12 +84,11 @@ public class TaskConsumer {
     }
 
     private SubTask getUserDataByMembershipId(SubTask subTask){
-        String membershipIdString = (String) subTask.getData();
+        String membershipIdString = subTask.getData().toString();
         Long membershipId = Long.parseLong(membershipIdString);
 
 
         try {
-            //Todo.
             UserDataMembership userData = userDataMapper.mapToDomainJump(membershipId);
             subTask.setData(userData);
             log.info(userData.toString());
