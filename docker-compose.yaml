@@ -1,0 +1,153 @@
+version: '3'
+services:
+
+  zookeeper:
+    image: docker.io/bitnami/zookeeper:3.8
+    networks:
+      - resistance_network
+    ports:
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOO_TLS_CLIENT_AUTH=none
+      - ZOO_TLS_QUORUM_CLIENT_AUTH=none
+
+  kafka:
+    image: docker.io/bitnami/kafka:3.3
+    networks:
+      - resistance_network
+    ports:
+      - '9092:9092'
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENERS=LC://kafka:29092,LX://kafka:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=LC://kafka:29092,LX://${DOCKER_HOST_IP:-localhost}:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=LC:PLAINTEXT,LX:PLAINTEXT
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=LC
+    depends_on:
+      - zookeeper
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    container_name: kafka-ui
+    networks:
+      - resistance_network
+    ports:
+      - "8989:8080"
+    restart: always
+    depends_on:
+      - kafka
+      - zookeeper
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:29092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+
+  mysql:
+    image: mysql:8.0
+    networks:
+      - resistance_network
+    volumes:
+      - ./db/conf.d:/etc/mysql/conf.d
+      - ./db/data:/var/lib/mysql
+      - ./db/initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    environment:
+      - TZ=Asia/Seoul
+      - MYSQL_HOST=localhost
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=resistance
+      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_USER=mysqluser
+      - MYSQL_PASSWORD=
+
+  membership-service:
+    image: membership-service:1.0.0
+    networks:
+      - resistance_network
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/resistance?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+      - SPRING_DATASOURCE_USERNAME=mysqluser
+      - SPRING_DATASOURCE_PASSWORD=mysqlpw
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - KAFKA_CLUSTERS_BOOTSTRAPSERVERS=kafka:29092
+      - LOGGING_TOPIC=logging.out.stdout
+      - TASK_TOPIC=service.task.topic
+      - TASK_RESULT_TOPIC=service.task.result.topic
+      - SPRING_DATA_REDIS_HOST=
+      - SPRING_DATA_REDIS_PASSWORD=
+      - SPRING_DATA_REDIS_PORT=
+      - SPRING_DATA_REDIS_REPOSITORIES_ENABLED=false
+      - EXPIRE_DEFAULTTIME=18000
+
+  dedicated-service:
+    image: dedicated-service:1.0.0
+    networks:
+      - resistance_network
+    ports:
+      - "8082:8080"
+    depends_on:
+      - mysql
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/resistance?useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=mysqluser
+      - SPRING_DATASOURCE_PASSWORD=mysqlpw
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - KAFKA_CLUSTERS_BOOTSTRAPSERVERS=kafka:29092
+      - LOGGING_TOPIC=logging.out.stdout
+      - TASK_TOPIC=service.task.topic
+      - TASK_RESULT_TOPIC=service.task.result.topic
+      - SPRING_CACHE_TYPE=redis
+      - SPRING_DATA_REDIS_HOST=
+      - SPRING_DATA_REDIS_PASSWORD=
+      - SPRING_DATA_REDIS_PORT=
+      - SPRING_DATA_REDIS_REPOSITORIES_ENABLED=false
+      - EXPIRE_DEFAULTTIME=180000
+
+  business-service:
+    image: business-service:1.0.0
+    networks:
+      - resistance_network
+    ports:
+      - "8083:8080"
+    depends_on:
+      - mysql
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/resistance?useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=mysqluser
+      - SPRING_DATASOURCE_PASSWORD=mysqlpw
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - KAFKA_CLUSTERS_BOOTSTRAPSERVERS=kafka:29092
+      - LOGGING_TOPIC=logging.out.stdout
+      - TASK_TOPIC=service.task.topic
+      - TASK_RESULT_TOPIC=service.task.result.topic
+      - SPRING_CACHE_TYPE=redis
+      - SPRING_DATA_REDIS_HOST=
+      - SPRING_DATA_REDIS_PASSWORD=
+      - SPRING_DATA_REDIS_PORT=
+      - SPRING_DATA_REDIS_REPOSITORIES_ENABLED=false
+      - EXPIRE_DEFAULTTIME=18000
+
+  logging-service:
+    image: logging-service:1.0.0
+    networks:
+      - resistance_network
+    restart: always
+    depends_on:
+      - kafka
+      - zookeeper
+    environment:
+      - KAFKA_CLUSTERS_BOOTSTRAPSERVERS=kafka:29092
+      - LOGGING_TOPIC=logging.out.stdout
+      - TASK_TOPIC=service.task.topic
+
+networks:
+  resistance_network:
+    driver: bridge
