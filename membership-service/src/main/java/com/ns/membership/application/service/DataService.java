@@ -21,10 +21,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -100,10 +97,10 @@ public class DataService implements UserDataRequestUseCase {
 
 
     @Override
-    public List<Long> getAllyRandom(String membershipId) {
+    public Set<Long> getAllyRandom(String membershipId) {
         int count = 5;
         return membershipRepository.getRandomAlly(membershipId, count).stream()
                 .map(entity -> entity.getMembershipId())
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 }

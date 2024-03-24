@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.List;
+import java.util.Set;
 
 @Builder
 @Data
@@ -30,12 +31,12 @@ public class ModifyMembershipCommand extends SelfValidating<ModifyMembershipComm
     @AssertTrue
     private final boolean isValid;
 
-    private final List<Long> friends;
-    private final List<Long> wantedFriends;
+    private final Set<Long> friends;
+    private final Set<Long> wantedFriends;
 
     private final String refreshToken;
 
-    public ModifyMembershipCommand(String membershipId, String name, String email, String address, boolean isValid, List<Long> friends, List<Long> wantedFriends, String refreshToken) {
+    public ModifyMembershipCommand(String membershipId, String name, String email, String address, boolean isValid, Set<Long> friends, Set<Long> wantedFriends, String refreshToken) {
         this.membershipId = membershipId;
         this.name = name;
         this.email = email;

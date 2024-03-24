@@ -4,9 +4,10 @@ import com.ns.membership.application.port.in.command.UserDataRequestCommand;
 import com.ns.membership.domain.userData;
 
 import java.util.List;
+import java.util.Set;
 
 public interface UserDataRequestUseCase {
     List<userData> getUserData(UserDataRequestCommand command);
 
-    List<Long> getAllyRandom(String membershipId);
+    Set<Long> getAllyRandom(String membershipId);
 }

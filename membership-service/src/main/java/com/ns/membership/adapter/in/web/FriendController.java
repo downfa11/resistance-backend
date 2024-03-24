@@ -17,7 +17,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -93,7 +95,7 @@ public class FriendController {
             if (membership.getWantedFriends().contains(request.getTargetId()) || targetMembership.getWantedFriends().contains(request.getMembershipId()))
                 throw new RuntimeException("error : "+"membership is already friend or wantedFriend.");
 
-            List<Long> wantedFriendList = new ArrayList<>(membership.getWantedFriends());
+            Set<Long> wantedFriendList = new HashSet<>(membership.getWantedFriends());
             wantedFriendList.add(request.getTargetId());
 
             ModifyMembershipCommand modifyCommand = ModifyMembershipCommand.builder()
@@ -130,10 +132,10 @@ public class FriendController {
             if (membership.getFriends().contains(request.getTargetId()) || targetMembership.getFriends().contains(request.getMembershipId()))
                 throw new RuntimeException("error : "+"membership is already friend or wantedFriend.");
 
-            List<Long> FriendList = new ArrayList<>(membership.getFriends());
+            Set<Long> FriendList = new HashSet<>(membership.getFriends());
             FriendList.add(request.getTargetId());
 
-            List<Long> targetFriendList = new ArrayList<>(targetMembership.getFriends());
+            Set<Long> targetFriendList = new HashSet<>(targetMembership.getFriends());
             targetFriendList.add(request.getMembershipId());
 
             ModifyMembershipCommand myModifyCommand = ModifyMembershipCommand.builder()
@@ -181,11 +183,11 @@ public class FriendController {
             if (membership.getFriends().contains(request.getTargetId()) || targetMembership.getFriends().contains(request.getMembershipId()))
                 throw new RuntimeException("error : "+"membership is already friend or wantedFriend.");
 
-            List<Long> FriendList = new ArrayList<>(membership.getFriends());
+            Set<Long> FriendList = new HashSet<>(membership.getFriends());
             if(!FriendList.remove(request.getTargetId()))
                 throw new RuntimeException("error : "+"membership's friend remove fail.");
 
-            List<Long> targetFriendList = new ArrayList<>(targetMembership.getFriends());
+            Set<Long> targetFriendList = new HashSet<>(targetMembership.getFriends());
             if(!targetFriendList.remove(request.getMembershipId()))
                 throw new RuntimeException("error : "+"target membership is null.");
 

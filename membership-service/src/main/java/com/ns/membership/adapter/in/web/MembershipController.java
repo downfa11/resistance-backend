@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.*;
 
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -75,9 +77,11 @@ public class MembershipController {
     @GetMapping (path = "/data/{membershipId}")
     ResponseEntity<List<userData>> getUserData(@PathVariable String membershipId){
 
+        Set<Long> targetIdSet = new HashSet<>(Collections.singletonList(Long.parseLong(membershipId)));
+
         UserDataRequestCommand command = UserDataRequestCommand.builder().
                 membershipId("") //요청을 보낸 사용자의 id인데, 여기선 그냥 때려박았다.
-                .targetIdList(Collections.singletonList(Long.parseLong(membershipId))).build();
+                .targetIdList(targetIdSet).build();
         List<userData> detail = userDataRequestUseCase.getUserData(command);
 
         return ResponseEntity.ok(detail);
@@ -86,7 +90,7 @@ public class MembershipController {
     @GetMapping("/ally/random/{membershipId}")
     ResponseEntity<List<userData>> getAllyRandom(@PathVariable String membershipId){
 
-        List<Long> targetIdList = userDataRequestUseCase.getAllyRandom(membershipId);
+        Set<Long> targetIdList = userDataRequestUseCase.getAllyRandom(membershipId);
 
         UserDataRequestCommand command = UserDataRequestCommand.builder().
                 membershipId(membershipId)

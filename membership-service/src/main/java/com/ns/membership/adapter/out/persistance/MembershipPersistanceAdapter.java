@@ -5,6 +5,7 @@ import com.ns.membership.application.port.out.FindMembershipPort;
 import com.ns.membership.application.port.out.ModifyMembershipPort;
 import com.ns.membership.application.port.out.RegisterMembershipPort;
 import com.ns.membership.domain.Membership;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,17 +43,21 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
 
     @Override
     public MembershipJpaEntity findMembership(Membership.MembershipId membershipId) {
-        MembershipJpaEntity membershipJpaEntity = membershipRepository.getById(Long.parseLong(membershipId.getMembershipId()));
+        Long id = Long.parseLong(membershipId.getMembershipId());
+        MembershipJpaEntity membershipJpaEntity = membershipRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Membership not found for id: " + id));
         String encryptedEmail = membershipJpaEntity.getEmail();
         //String decrptedEmail = vaultAdapter.decrypt(encryptedEmail);
         membershipJpaEntity.setEmail(encryptedEmail);
-        return membershipRepository.getById(Long.parseLong(membershipId.getMembershipId()));
+        return membershipJpaEntity;
     }
 
 
     @Override
     public MembershipJpaEntity modifyMembership(Membership.MembershipId membershipId, Membership.MembershipName membershipName, Membership.MembershipAddress membershipAddress, Membership.MembershipEmail membershipEmail, Membership.MembershipIsValid membershipIsValid, Membership.Friends friends, Membership.WantedFriends wantedFriends, Membership.RefreshToken refreshToken) {
-        MembershipJpaEntity entity = membershipRepository.getById(Long.parseLong(membershipId.getMembershipId()));
+        Long id = Long.parseLong(membershipId.getMembershipId());
+        MembershipJpaEntity entity = membershipRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Membership not found for id: " + id));
         //String encryptedEmail = vaultAdapter.encrypt(membershipEmail.getEmailValue());
 
         entity.setName(membershipName.getNameValue());
