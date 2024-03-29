@@ -75,7 +75,7 @@ services:
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/resistance?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
       - SPRING_DATASOURCE_USERNAME=mysqluser
-      - SPRING_DATASOURCE_PASSWORD=mysqlpw
+      - SPRING_DATASOURCE_PASSWORD=
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - KAFKA_CLUSTERS_BOOTSTRAPSERVERS=kafka:29092
       - LOGGING_TOPIC=logging.out.stdout
@@ -83,9 +83,9 @@ services:
       - TASK_RESULT_TOPIC=service.task.result.topic
       - SPRING_DATA_REDIS_HOST=
       - SPRING_DATA_REDIS_PASSWORD=
-      - SPRING_DATA_REDIS_PORT=
+      - SPRING_DATA_REDIS_PORT=6379
       - SPRING_DATA_REDIS_REPOSITORIES_ENABLED=false
-      - EXPIRE_DEFAULTTIME=18000
+      - EXPIRE_DEFAULTTIME=18000 # 친구목록의 캐싱은 만료시간이 길다
 
   dedicated-service:
     image: dedicated-service:1.0.0
@@ -107,9 +107,9 @@ services:
       - SPRING_CACHE_TYPE=redis
       - SPRING_DATA_REDIS_HOST=
       - SPRING_DATA_REDIS_PASSWORD=
-      - SPRING_DATA_REDIS_PORT=
+      - SPRING_DATA_REDIS_PORT=6379
       - SPRING_DATA_REDIS_REPOSITORIES_ENABLED=false
-      - EXPIRE_DEFAULTTIME=180000
+      - EXPIRE_DEFAULTTIME=18000 # 사실 게시글의 캐시도 길어도 된다. 바뀔 일이 잘없음.
 
   business-service:
     image: business-service:1.0.0
@@ -131,9 +131,9 @@ services:
       - SPRING_CACHE_TYPE=redis
       - SPRING_DATA_REDIS_HOST=
       - SPRING_DATA_REDIS_PASSWORD=
-      - SPRING_DATA_REDIS_PORT=
+      - SPRING_DATA_REDIS_PORT=6379
       - SPRING_DATA_REDIS_REPOSITORIES_ENABLED=false
-      - EXPIRE_DEFAULTTIME=18000
+      - EXPIRE_DEFAULTTIME=18000 #너는 좀 짧아야한다.
 
   logging-service:
     image: logging-service:1.0.0

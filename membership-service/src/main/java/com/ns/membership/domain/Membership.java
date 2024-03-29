@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Value;
 
 import java.util.List;
+import java.util.Set;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Membership {
@@ -16,8 +17,8 @@ public class Membership {
     @Getter private final String email;
     @Getter private final String address;
     @Getter private final boolean isValid;
-    @Getter private final List<Long> friends;
-    @Getter private final List<Long> wantedFriends;
+    @Getter private final Set<Long> friends;
+    @Getter private final Set<Long> wantedFriends;
 
     @Getter private final String refreshToken;
 
@@ -95,18 +96,18 @@ public class Membership {
     }
     @Value
     public static class Friends {
-        private List<Long> friends;
+        private Set<Long> friends;
 
-        public Friends(List<Long> friends) {
+        public Friends(Set<Long> friends) {
             this.friends = friends;
         }
     }
 
     @Value
     public static class WantedFriends {
-        private List<Long> wantedfriends;
+        private Set<Long> wantedfriends;
 
-        public WantedFriends(List<Long> wantedfriends) {
+        public WantedFriends(Set<Long> wantedfriends) {
             this.wantedfriends = wantedfriends;
         }
     }

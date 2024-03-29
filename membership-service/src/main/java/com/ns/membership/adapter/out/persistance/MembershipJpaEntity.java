@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 
 @Entity
@@ -26,14 +27,15 @@ public class MembershipJpaEntity {
 
     private boolean isValid;
 
-    @Transient
-    private List<Long> friends;
-    @Transient
-    private List<Long> wantedFriends;
+    @ElementCollection
+    private Set<Long> friends;
+
+    @ElementCollection
+    private Set<Long> wantedFriends;
 
     private String refreshToken;
 
-    public MembershipJpaEntity(String name, String address, String email, boolean isValid, List<Long> friends, List<Long> wantedFriends, String refreshToken) {
+    public MembershipJpaEntity(String name, String address, String email, boolean isValid, Set<Long> friends, Set<Long> wantedFriends, String refreshToken) {
         this.name = name;
         this.address = address;
         this.email = email;
