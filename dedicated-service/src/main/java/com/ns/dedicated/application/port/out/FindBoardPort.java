@@ -13,6 +13,6 @@ public interface FindBoardPort {
     );
 
     List<BoardJpaEntity> findBoardsAll(
-            Long lastboardId
+            int offset
     );
 }

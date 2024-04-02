@@ -6,6 +6,4 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BoardRepository extends JpaRepository<BoardJpaEntity,Long> {
-
-    Page<BoardJpaEntity> findByBoardIdGreaterThanEqual(Long lastboardId, Pageable pageable);
 }

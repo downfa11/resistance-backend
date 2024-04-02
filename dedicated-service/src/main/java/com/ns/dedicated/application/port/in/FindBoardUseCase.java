@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface FindBoardUseCase {
     Board findBoard(FindBoardCommand command);
-    List<Board> getBoardsAll(Long lastboardId);
+    List<Board> getBoardsAll(int offset);
 }

@@ -95,15 +95,15 @@ public class FriendController {
             if (membership.getWantedFriends().contains(request.getTargetId()) || targetMembership.getWantedFriends().contains(request.getMembershipId()))
                 throw new RuntimeException("error : "+"membership is already friend or wantedFriend.");
 
-            Set<Long> wantedFriendList = new HashSet<>(membership.getWantedFriends());
-            wantedFriendList.add(request.getTargetId());
+            Set<Long> wantedFriendList = new HashSet<>(targetMembership.getWantedFriends());
+            wantedFriendList.add(request.getMembershipId());
 
             ModifyMembershipCommand modifyCommand = ModifyMembershipCommand.builder()
-                    .membershipId(membership.getMembershipId())
-                    .name(membership.getName())
-                    .address(membership.getAddress())
-                    .email(membership.getEmail())
-                    .isValid(membership.isValid())
+                    .membershipId(targetMembership.getMembershipId())
+                    .name(targetMembership.getName())
+                    .address(targetMembership.getAddress())
+                    .email(targetMembership.getEmail())
+                    .isValid(targetMembership.isValid())
                     .wantedFriends(wantedFriendList)
                     .build();
 
@@ -131,6 +131,9 @@ public class FriendController {
 
             if (membership.getFriends().contains(request.getTargetId()) || targetMembership.getFriends().contains(request.getMembershipId()))
                 throw new RuntimeException("error : "+"membership is already friend or wantedFriend.");
+
+            if (!membership.getWantedFriends().contains(request.getTargetId()))
+                throw new RuntimeException("error : "+"targetId is not registered Member's wantedFriends List.");
 
             Set<Long> FriendList = new HashSet<>(membership.getFriends());
             FriendList.add(request.getTargetId());
