@@ -4,10 +4,7 @@ package com.ns.dedicated.application.service;
 import com.ns.common.UseCase;
 import com.ns.dedicated.adpater.out.persistance.BoardJpaEntity;
 import com.ns.dedicated.adpater.out.persistance.BoardMapper;
-import com.ns.dedicated.application.port.in.DeleteBoardUseCase;
-import com.ns.dedicated.application.port.in.FindBoardUseCase;
-import com.ns.dedicated.application.port.in.ModifyBoardUseCase;
-import com.ns.dedicated.application.port.in.RegisterBoardUseCase;
+import com.ns.dedicated.application.port.in.*;
 import com.ns.dedicated.application.port.in.command.DeleteBoardCommand;
 import com.ns.dedicated.application.port.in.command.FindBoardCommand;
 import com.ns.dedicated.application.port.in.command.ModifyBoardCommand;
@@ -19,15 +16,21 @@ import com.ns.dedicated.application.port.out.RegisterBoardPort;
 import com.ns.dedicated.domain.Board;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.scheduling.annotation.Async;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
 
 @UseCase
+@Slf4j
 @RequiredArgsConstructor
 public class BoardService implements RegisterBoardUseCase, ModifyBoardUseCase, FindBoardUseCase, DeleteBoardUseCase {
 
@@ -36,6 +39,9 @@ public class BoardService implements RegisterBoardUseCase, ModifyBoardUseCase, F
     private final DeleteBoardPort deleteBoardPort;
     private final FindBoardPort findBoardPort;
     private final BoardMapper boardMapper;
+
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
     @Override
     @Transactional
@@ -46,6 +52,10 @@ public class BoardService implements RegisterBoardUseCase, ModifyBoardUseCase, F
                 new Board.BoardContents(command.getContents())
         );
 
+        Long currentDate = jpaEntity.getCreatedAt().getTime();
+        ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
+        zSetOperations.add("board:time",String.valueOf(currentDate),currentDate);
+        log.info("register board to board zset : "+currentDate);
         return boardMapper.mapToDomainEntity(jpaEntity);
     }
 
@@ -77,9 +87,9 @@ public class BoardService implements RegisterBoardUseCase, ModifyBoardUseCase, F
 
     @Async
     @Override
-    @Cacheable(value="getPosts",key="'getPosts'+':'+ #lastboardId")
-    public List<Board> getBoardsAll(Long lastboardId) {
-        List<BoardJpaEntity> boards = findBoardPort.findBoardsAll(lastboardId);
+    @Cacheable(value="getPosts",key="'getPosts'+':'+ #offset")
+    public List<Board> getBoardsAll(int offset) {
+        List<BoardJpaEntity> boards = findBoardPort.findBoardsAll(offset);
 
         List<Board> boardResponses = new ArrayList<>();
         for (BoardJpaEntity board : boards)
