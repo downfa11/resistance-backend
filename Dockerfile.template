@@ -2,7 +2,7 @@ FROM gradle:jdk17-alpine as builder
 WORKDIR /workspace/app
 COPY . /workspace/app/
 RUN ./gradlew build -p ${MODULE}
-FROM openjdk:11-jre-slim
+FROM openjdk:17-jre-slim
 
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
