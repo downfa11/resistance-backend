@@ -1,7 +1,7 @@
 name: Docker Image CI
 
 env:
-  MODULE: resistance
+  MODULE: resistance_msa
   
 on:
   push:
