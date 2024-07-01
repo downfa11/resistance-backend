@@ -8,4 +8,9 @@ public interface FindMembershipPort {
     MembershipJpaEntity findMembership(
             Membership.MembershipId membershipId
     );
+
+    MembershipJpaEntity findMembershipByEmailAndAddress(
+            Membership.MembershipAddress address,
+            Membership.MembershipEmail email
+    );
 }

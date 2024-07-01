@@ -27,7 +27,8 @@ public class AuthMembershipController {
     JWtToken loginMembership(@RequestBody LoginMembershipRequest request){
 
         LoginMembershipCommand command = LoginMembershipCommand.builder()
-                .membershipId(request.getMembershipId())
+                .address(request.getAddress())
+                .email(request.getEmail())
                 .build();
 
         return loginMembershipUseCase.LoginMembership(command);

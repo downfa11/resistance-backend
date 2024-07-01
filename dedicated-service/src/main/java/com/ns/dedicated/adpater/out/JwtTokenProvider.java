@@ -1,7 +1,6 @@
-package com.ns.membership.adapter.out;
+package com.ns.dedicated.adpater.out;
 
-import com.ns.membership.application.port.out.AuthMembershipPort;
-import com.ns.membership.domain.Membership;
+
 import io.jsonwebtoken.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
@@ -11,7 +10,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import java.util.Date;
 
 @Component
-public class JwtTokenProvider implements AuthMembershipPort {
+public class JwtTokenProvider {
 
     private String jwtSecret; // secret key
     private long jwtExpirationInMs;
@@ -45,15 +44,14 @@ public class JwtTokenProvider implements AuthMembershipPort {
         return membershipId;
     }
 
-    @Override
-    public String generateJwtToken(Membership.MembershipId membershipId) {
+    public String generateJwtToken(String membershipId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
         String token = Jwts.builder()
-                .setSubject(membershipId.getMembershipId())
+                .setSubject(membershipId.toString())
                 .setHeaderParam("type", "jwt")
-                .claim("id", membershipId.getMembershipId())
+                .claim("id", membershipId)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(SignatureAlgorithm.HS256, jwtSecret)
@@ -62,13 +60,12 @@ public class JwtTokenProvider implements AuthMembershipPort {
         return "Bearer " + token;
     }
 
-    @Override
-    public String generateRefreshToken(Membership.MembershipId membershipId) {
+    public String generateRefreshToken(String membershipId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + refreshTokenExpirationInMs);
 
         return Jwts.builder()
-                .setSubject(membershipId.getMembershipId())
+                .setSubject(membershipId.toString())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
@@ -92,8 +89,8 @@ public class JwtTokenProvider implements AuthMembershipPort {
         return false;
     }
 
-    public Membership.MembershipId parseMembershipIdFromToken(String token) {
+    public String parseMembershipIdFromToken(String token) {
         Claims claims = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody();
-        return new Membership.MembershipId(claims.getSubject());
+        return claims.getSubject();
     }
 }

@@ -12,10 +12,13 @@ import lombok.EqualsAndHashCode;
 
 public class LoginMembershipCommand extends SelfValidating<LoginMembershipCommand> {
     @NotNull
-    private final String membershipId;
+    private final String address;
+    @NotNull
+    private final String email;
 
-    public LoginMembershipCommand(String membershipId) {
-        this.membershipId = membershipId;
+    public LoginMembershipCommand(String address, String email) {
+        this.address = address;
+        this.email = email;
 
         this.validateSelf();
     }

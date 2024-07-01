@@ -52,6 +52,19 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
         return membershipJpaEntity;
     }
 
+    @Override
+    public MembershipJpaEntity findMembershipByEmailAndAddress(Membership.MembershipAddress address, Membership.MembershipEmail email) {
+
+        String addressValue= address.getAddressValue();
+        String emailValue= email.getEmailValue();
+        MembershipJpaEntity membershipJpaEntity = membershipRepository.findByAddressAndEmail(addressValue,emailValue)
+                .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + addressValue+", "+emailValue));
+        String encryptedEmail = membershipJpaEntity.getEmail();
+        //String decrptedEmail = vaultAdapter.decrypt(encryptedEmail);
+        //membershipJpaEntity.setEmail(encryptedEmail);
+        return membershipJpaEntity;
+    }
+
 
     @Override
     public MembershipJpaEntity modifyMembership(Membership.MembershipId membershipId, Membership.MembershipName membershipName, Membership.MembershipAddress membershipAddress, Membership.MembershipEmail membershipEmail, Membership.MembershipIsValid membershipIsValid, Membership.Friends friends, Membership.WantedFriends wantedFriends, Membership.RefreshToken refreshToken) {

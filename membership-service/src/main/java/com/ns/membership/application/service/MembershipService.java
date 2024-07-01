@@ -6,6 +6,7 @@ import com.ns.common.Task;
 import com.ns.common.UseCase;
 import com.ns.membership.adapter.out.persistance.MembershipJpaEntity;
 import com.ns.membership.adapter.out.persistance.MembershipMapper;
+import com.ns.membership.adapter.out.vault.VaultAdapter;
 import com.ns.membership.application.port.in.FindMembershipUseCase;
 import com.ns.membership.application.port.in.ModifyMembershipUseCase;
 import com.ns.membership.application.port.in.RegisterMembershipUseCase;
@@ -38,16 +39,20 @@ public class MembershipService implements RegisterMembershipUseCase, ModifyMembe
 
     private final SendTaskPort sendTaskPort;
     private final CountDownLatchManager countDownLatchManager;
+    private final VaultAdapter vaultAdapter;
 
     @Override
     @Transactional
     public Membership registerMembership(RegisterMembershipCommand command) {
 
+
+        String encryptedAddress = vaultAdapter.encrypt(command.getAddress());
+
         // db는 외부 시스템이라 이용하기 위해선 port, adapter를 통해서 나갈 수 있다.
 
         MembershipJpaEntity jpaEntity = registerMembershipPort.createMembership(
                 new Membership.MembershipName(command.getName()),
-                new Membership.MembershipAddress(command.getAddress()),
+                new Membership.MembershipAddress(encryptedAddress),
                 new Membership.MembershipEmail(command.getEmail()),
                 new Membership.MembershipIsValid(command.isValid()),
                 new Membership.Friends(null),
@@ -95,11 +100,13 @@ public class MembershipService implements RegisterMembershipUseCase, ModifyMembe
     @CacheEvict(value="userData", key="'userData'+':'+ #command.membershipId+':'+ #command.targetIdList",allEntries = true)
     public Membership modifyMembership(ModifyMembershipCommand command) {
 
+        String encryptedAddress = vaultAdapter.encrypt(command.getAddress());
+
         // db는 외부 시스템이라 이용하기 위해선 port, adapter를 통해서 나갈 수 있다.
         MembershipJpaEntity jpaEntity = modifyMembershipPort.modifyMembership(
                 new Membership.MembershipId(command.getMembershipId()),
                 new Membership.MembershipName(command.getName()),
-                new Membership.MembershipAddress(command.getAddress()),
+                new Membership.MembershipAddress(encryptedAddress),
                 new Membership.MembershipEmail(command.getEmail()),
                 new Membership.MembershipIsValid(command.isValid()),
 

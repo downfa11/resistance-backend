@@ -109,19 +109,29 @@ public class BoardPersistanceAdapter implements RegisterBoardPort, FindBoardPort
     }
 
     @Override
-    public List<BoardJpaEntity> findBoardsAll(Long lastboardId) {
+    public List<BoardJpaEntity> findBoardsAll(Long offset) {
         int pageSize = 10;
-        Page<BoardJpaEntity> boards = fetchPagesAll(lastboardId, pageSize);
 
-        if (boards.hasContent())
+        int pageNumber = (offset != null) ? offset.intValue() : 0;
+        Page<BoardJpaEntity> boards = fetchPagesAll(pageNumber, pageSize);
+
+        if (boards.isEmpty()) {
             return Collections.emptyList();
+        }
 
         return boards.getContent();
     }
 
-    private Page<BoardJpaEntity> fetchPagesAll(Long lastboardId, int size) {
-        PageRequest pageRequest = PageRequest.of(0, size, Sort.by("createdAt").descending());
-        return boardRepository.findByBoardIdGreaterThanEqual(lastboardId, pageRequest);
+    private Page<BoardJpaEntity> fetchPagesAll(int offset, int size) {
+        PageRequest pageRequest = PageRequest.of(offset, size, Sort.by("createdAt").descending());
+        return boardRepository.findAll(pageRequest);
+    }
+
+
+    @Override
+    public BoardJpaEntity findTopByOrderByCreatedAtDesc() {
+        Optional<BoardJpaEntity> boardOptional = boardRepository.findTopByOrderByCreatedAtDesc();
+        return boardOptional.get();
     }
 
 }

@@ -1,7 +1,9 @@
 package com.ns.dedicated.adpater.in.web;
 
 import com.ns.dedicated.adpater.in.web.dto.AddBoardRequest;
+import com.ns.dedicated.adpater.in.web.dto.BoardList;
 import com.ns.dedicated.adpater.in.web.dto.UpdateBoardRequest;
+import com.ns.dedicated.adpater.out.JwtTokenProvider;
 import com.ns.dedicated.application.port.in.DeleteBoardUseCase;
 import com.ns.dedicated.application.port.in.FindBoardUseCase;
 import com.ns.dedicated.application.port.in.ModifyBoardUseCase;
@@ -12,12 +14,14 @@ import com.ns.dedicated.application.port.in.command.ModifyBoardCommand;
 import com.ns.dedicated.application.port.in.command.RegisterBoardCommand;
 import com.ns.dedicated.domain.Board;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Random;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(path="/board")
@@ -27,6 +31,7 @@ public class BoardController {
     private final ModifyBoardUseCase modifyBoardUseCase;
     private final FindBoardUseCase findBoardUseCase;
     private final DeleteBoardUseCase deleteBoardUseCase;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/add")
     public Board add(@RequestBody AddBoardRequest request) {
@@ -64,6 +69,7 @@ public class BoardController {
 
     @GetMapping(path="/{boardId}")
     ResponseEntity<Board> findBoardByBaordId(@PathVariable Long boardId){
+        //Long memberId = jwtTokenProvider.getMembershipIdbyToken();
 
         FindBoardCommand command = FindBoardCommand.builder()
                 .boardId(boardId)
@@ -72,10 +78,14 @@ public class BoardController {
         return ResponseEntity.ok(findBoardUseCase.findBoard(command));
     }
 
-    @GetMapping("/list/{lastboardId}")
-    public ResponseEntity<List<Board>> getBoardsAll(@PathVariable Long lastboardId) {
-        List<Board> boards = findBoardUseCase.getBoardsAll(lastboardId);
-        return ResponseEntity.ok(boards);
+    @GetMapping("/list/{offset}")
+    public ResponseEntity<BoardList> getBoardsAll(@PathVariable Long offset) {
+        // Long memberId = jwtTokenProvider.getMembershipIdbyToken();
+
+        List<Board> boards = findBoardUseCase.getBoardsAll(offset);
+        return ResponseEntity.ok(
+                BoardList.builder()
+                        .boards(boards).build());
     }
 
     @DeleteMapping("{boardId}")
@@ -86,4 +96,9 @@ public class BoardController {
         deleteBoardUseCase.deleteBoard(command);
     }
 
+    @GetMapping("/polling")
+    public ResponseEntity<String> PostPolling(){
+        Long memberId = jwtTokenProvider.getMembershipIdbyToken();
+        return ResponseEntity.ok().body(findBoardUseCase.findLatestPostTimeStamp());
+    }
 }

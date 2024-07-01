@@ -1,6 +1,8 @@
 package com.ns.membership.adapter.in.web;
 
 import com.ns.membership.adapter.in.web.dto.FriendRequest;
+import com.ns.membership.adapter.in.web.dto.userDataCommands;
+import com.ns.membership.adapter.out.JwtTokenProvider;
 import com.ns.membership.application.port.in.FindMembershipUseCase;
 import com.ns.membership.application.port.in.ModifyMembershipUseCase;
 import com.ns.membership.application.port.in.RegisterMembershipUseCase;
@@ -30,10 +32,23 @@ public class FriendController {
     private final ModifyMembershipUseCase modifyMembershipUseCase;
     private final FindMembershipUseCase findMembershipUseCase;
     private final UserDataRequestUseCase userDataRequestUseCase;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping("/{membershipId}")
-    ResponseEntity<List<userData>> GetFriendList(@PathVariable String membershipId){
+    ResponseEntity<userDataCommands> GetFriendList(@PathVariable String membershipId){
         //Todo 친구 목록을 표시합니다.
+        String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
+
+        FindMembershipCommand findCmmand = FindMembershipCommand.builder()
+                .membershipId(memberId)
+                .build();
+
+        Membership member= findMembershipUseCase.findMembership(findCmmand);
+
+        if(member==null) {
+            return ResponseEntity.notFound().build();
+        }
+
         try {
             Membership membership = findMembership(membershipId);
 
@@ -47,7 +62,11 @@ public class FriendController {
             log.info(membership.getFriends().toString());
 
             List<userData> detail = userDataRequestUseCase.getUserData(command);
-            return ResponseEntity.ok(detail);
+            return ResponseEntity.ok(
+                    userDataCommands.builder()
+                            .userDataCommandList(detail)
+                            .build()
+            );
         } catch (Exception e){
             throw new RuntimeException("error : "+e);
         }
@@ -55,8 +74,20 @@ public class FriendController {
 
 
     @GetMapping("/wanted/{membershipId}")
-    ResponseEntity<List<userData>> GetWantedFriendList(@PathVariable String membershipId){
+    ResponseEntity<userDataCommands> GetWantedFriendList(@PathVariable String membershipId){
         //Todo 친구신청 목록을 표시합니다.
+        String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
+
+        FindMembershipCommand findCmmand = FindMembershipCommand.builder()
+                .membershipId(memberId)
+                .build();
+
+        Membership member= findMembershipUseCase.findMembership(findCmmand);
+
+        if(member==null) {
+            return ResponseEntity.notFound().build();
+        }
+
         try {
             Membership membership = findMembership(membershipId);
 
@@ -70,7 +101,11 @@ public class FriendController {
             log.info(membership.getWantedFriends().toString());
 
             List<userData> detail = userDataRequestUseCase.getUserData(command);
-            return ResponseEntity.ok(detail);
+            return ResponseEntity.ok(
+                    userDataCommands.builder()
+                            .userDataCommandList(detail)
+                            .build()
+                );
         } catch (Exception e){
             throw new RuntimeException("error : "+e);
         }
@@ -79,6 +114,19 @@ public class FriendController {
     @PostMapping("/wanted/add")
     ResponseEntity<Membership> PostSendWantFriend(@RequestBody FriendRequest request){
         //Todo 친구 신청합니다.
+        String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
+
+        FindMembershipCommand findCmmand = FindMembershipCommand.builder()
+                .membershipId(memberId)
+                .build();
+
+        Membership member= findMembershipUseCase.findMembership(findCmmand);
+
+        if(member==null) {
+            return ResponseEntity.notFound().build();
+        }
+
+
         try {
             String membershipId = request.getMembershipId().toString();
             String targetmembershipId = request.getTargetId().toString();
@@ -116,6 +164,19 @@ public class FriendController {
     @PostMapping("/add")
     ResponseEntity<Membership> PostSendFriendAgree(@RequestBody FriendRequest request){
         //Todo 친구 신청을 수락합니다.
+
+        String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
+
+        FindMembershipCommand findCmmand = FindMembershipCommand.builder()
+                .membershipId(memberId)
+                .build();
+
+        Membership member= findMembershipUseCase.findMembership(findCmmand);
+
+        if(member==null) {
+            return ResponseEntity.notFound().build();
+        }
+
         try {
             String membershipId = request.getMembershipId().toString();
             String targetmembershipId = request.getTargetId().toString();
@@ -167,6 +228,19 @@ public class FriendController {
     @PostMapping("/delete")
     ResponseEntity<Membership> PostDeleteFriend(@RequestBody FriendRequest request){
         //Todo 친구를 삭제합니다.
+
+        String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
+
+        FindMembershipCommand findCmmand = FindMembershipCommand.builder()
+                .membershipId(memberId)
+                .build();
+
+        Membership member= findMembershipUseCase.findMembership(findCmmand);
+
+        if(member==null) {
+            return ResponseEntity.notFound().build();
+        }
+
         try {
             String membershipId = request.getMembershipId().toString();
             String targetmembershipId = request.getTargetId().toString();

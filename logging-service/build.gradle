@@ -46,6 +46,6 @@ docker {
     buildArgs(['JAR_FILE':tasks.bootJar.outputs.files.singleFile.name])
 }
 
-bootJar {
-    archiveFileName = "${project.name}.jar"
-}
+//bootJar {
+//    archiveFileName = "${project.name}.jar"
+//}

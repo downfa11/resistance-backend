@@ -18,7 +18,9 @@ import com.ns.dedicated.application.port.out.ModifyBoardPort;
 import com.ns.dedicated.application.port.out.RegisterBoardPort;
 import com.ns.dedicated.domain.Board;
 import jakarta.transaction.Transactional;
+import jakarta.websocket.OnError;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
@@ -28,6 +30,7 @@ import java.util.List;
 
 
 @UseCase
+@Slf4j
 @RequiredArgsConstructor
 public class BoardService implements RegisterBoardUseCase, ModifyBoardUseCase, FindBoardUseCase, DeleteBoardUseCase {
 
@@ -77,14 +80,23 @@ public class BoardService implements RegisterBoardUseCase, ModifyBoardUseCase, F
 
     @Async
     @Override
-    @Cacheable(value="getPosts",key="'getPosts'+':'+ #lastboardId")
-    public List<Board> getBoardsAll(Long lastboardId) {
-        List<BoardJpaEntity> boards = findBoardPort.findBoardsAll(lastboardId);
+    @Cacheable(value="getPosts",key="'getPosts'+':'+ #offset")
+    public List<Board> getBoardsAll(Long offset) {
+        List<BoardJpaEntity> boards = findBoardPort.findBoardsAll(offset);
 
         List<Board> boardResponses = new ArrayList<>();
         for (BoardJpaEntity board : boards)
             boardResponses.add(boardMapper.mapToDomainEntity(board));
 
         return boardResponses;
+    }
+
+    @Async
+    @Override
+    @Cacheable(value="latestPosts",key="'getPosts:latest'")
+    public String findLatestPostTimeStamp(){
+        BoardJpaEntity entity = findBoardPort.findTopByOrderByCreatedAtDesc();
+        Board board = boardMapper.mapToDomainEntity(entity);
+        return board.getUpdatedAt().toString();
     }
 }

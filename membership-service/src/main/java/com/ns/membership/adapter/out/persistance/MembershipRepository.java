@@ -15,4 +15,6 @@ public interface MembershipRepository extends JpaRepository<MembershipJpaEntity,
     @Query(value = "SELECT * FROM resistance.membership WHERE membership_id != ?1 ORDER BY RAND() LIMIT ?2", nativeQuery = true)
     List<MembershipJpaEntity> getRandomAlly(String membershipId, int count);
 
+    Optional<MembershipJpaEntity> findByAddressAndEmail(String address, String email);
+
 }

@@ -13,9 +13,9 @@ public class userData {
     @Getter private String name;
     @Getter private int highScore;
 
-    @Getter private String head;
-    @Getter private String body;
-    @Getter private String arm;
+    @Getter private int head;
+    @Getter private int body;
+    @Getter private int arm;
 
     @Getter private int health;
     @Getter private int attack;

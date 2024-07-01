@@ -2,6 +2,8 @@ package com.ns.membership.adapter.in.web;
 
 import com.ns.membership.adapter.in.web.dto.ModifyMembershipRequest;
 import com.ns.membership.adapter.in.web.dto.RegisterMembershipRequest;
+import com.ns.membership.adapter.in.web.dto.userDataCommands;
+import com.ns.membership.adapter.out.JwtTokenProvider;
 import com.ns.membership.application.port.in.FindMembershipUseCase;
 import com.ns.membership.application.port.in.ModifyMembershipUseCase;
 import com.ns.membership.application.port.in.RegisterMembershipUseCase;
@@ -34,6 +36,7 @@ public class MembershipController {
     private final ModifyMembershipUseCase modifyMembershipUseCase;
     private final FindMembershipUseCase findMembershipUseCase;
     private final UserDataRequestUseCase userDataRequestUseCase;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping (path = "/register")
     Membership registerMembership(@RequestBody RegisterMembershipRequest request){
@@ -52,8 +55,19 @@ public class MembershipController {
 
     @PostMapping(path="/modify/")
     ResponseEntity<Membership> modifyMembershipByMemberId(@RequestBody ModifyMembershipRequest request){
+        String membershipId = jwtTokenProvider.getMembershipIdbyToken().toString();
 
-        ModifyMembershipCommand command = ModifyMembershipCommand.builder()
+        FindMembershipCommand findCmmand = FindMembershipCommand.builder()
+                .membershipId(membershipId)
+                .build();
+
+        Membership membership = findMembershipUseCase.findMembership(findCmmand);
+
+        if(membership==null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        ModifyMembershipCommand modifyCommand = ModifyMembershipCommand.builder()
                 .membershipId(request.getMembershipId())
                 .name(request.getName())
                 .address(request.getAddress())
@@ -61,7 +75,7 @@ public class MembershipController {
                 .isValid(request.isValid())
                 .build();
 
-        return ResponseEntity.ok(modifyMembershipUseCase.modifyMembership(command));
+        return ResponseEntity.ok(modifyMembershipUseCase.modifyMembership(modifyCommand));
     }
 
     @GetMapping(path="/{membershipId}")
@@ -75,20 +89,46 @@ public class MembershipController {
     }
 
     @GetMapping (path = "/data/{membershipId}")
-    ResponseEntity<List<userData>> getUserData(@PathVariable String membershipId){
+    ResponseEntity<userDataCommands> getUserData(@PathVariable String membershipId){
+        String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
+
+        FindMembershipCommand findCmmand = FindMembershipCommand.builder()
+                .membershipId(memberId)
+                .build();
+
+        Membership membership = findMembershipUseCase.findMembership(findCmmand);
+
+        if(membership==null) {
+            return ResponseEntity.notFound().build();
+        }
 
         Set<Long> targetIdSet = new HashSet<>(Collections.singletonList(Long.parseLong(membershipId)));
 
         UserDataRequestCommand command = UserDataRequestCommand.builder().
-                membershipId("") //요청을 보낸 사용자의 id인데, 여기선 그냥 때려박았다.
+                membershipId(memberId) //요청을 보낸 사용자의 id
                 .targetIdList(targetIdSet).build();
         List<userData> detail = userDataRequestUseCase.getUserData(command);
 
-        return ResponseEntity.ok(detail);
+        return ResponseEntity.ok(
+                userDataCommands.builder()
+                        .userDataCommandList(detail)
+                        .build());
     }
 
     @GetMapping("/ally/random/{membershipId}")
-    ResponseEntity<List<userData>> getAllyRandom(@PathVariable String membershipId){
+    ResponseEntity<userDataCommands> getAllyRandom(@PathVariable String membershipId){
+
+        String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
+
+        FindMembershipCommand findCmmand = FindMembershipCommand.builder()
+                .membershipId(memberId)
+                .build();
+
+        Membership membership = findMembershipUseCase.findMembership(findCmmand);
+
+        if(membership==null) {
+            return ResponseEntity.notFound().build();
+        }
 
         Set<Long> targetIdList = userDataRequestUseCase.getAllyRandom(membershipId);
 
@@ -98,6 +138,10 @@ public class MembershipController {
 
         log.info(targetIdList.toString());
         List<userData> detail = userDataRequestUseCase.getUserData(command);
-        return ResponseEntity.ok(detail);
+        return ResponseEntity.ok(
+                userDataCommands.builder()
+                        .userDataCommandList(detail)
+                        .build()
+        );
     }
 }

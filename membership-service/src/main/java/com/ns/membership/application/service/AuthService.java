@@ -3,6 +3,7 @@ package com.ns.membership.application.service;
 
 import com.ns.membership.adapter.out.persistance.MembershipJpaEntity;
 import com.ns.membership.adapter.out.persistance.MembershipMapper;
+import com.ns.membership.adapter.out.vault.VaultAdapter;
 import com.ns.membership.application.port.in.LoginMembershipUseCase;
 import com.ns.membership.application.port.in.command.LoginMembershipCommand;
 import com.ns.membership.application.port.in.command.RefreshTokenCommand;
@@ -27,15 +28,23 @@ public class AuthService implements LoginMembershipUseCase {
     private final FindMembershipPort findMembershipPort;
     private final ModifyMembershipPort modifyMembershipPort;
     private final MembershipMapper mapper;
+    private final VaultAdapter vaultAdapter;
     @Override
     public JWtToken LoginMembership(LoginMembershipCommand command) {
 
-        String membershipId = command.getMembershipId();
-        MembershipJpaEntity membershipJpaEntity = findMembershipPort.findMembership(
-                new Membership.MembershipId(membershipId)
+
+        String email = command.getEmail();
+        String encryptedAddress = vaultAdapter.encrypt(command.getAddress());
+        MembershipJpaEntity membershipJpaEntity = findMembershipPort.findMembershipByEmailAndAddress(
+                new Membership.MembershipAddress(encryptedAddress),
+                new Membership.MembershipEmail(email)
         );
 
+
         if(membershipJpaEntity.isValid()) {
+
+            String membershipId = membershipJpaEntity.getMembershipId().toString();
+
             String jwtToken = authMembershipPort.generateJwtToken(
                     new Membership.MembershipId(membershipId)
             );

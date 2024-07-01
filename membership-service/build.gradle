@@ -43,6 +43,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly 'com.mysql:mysql-connector-j'
 
+    //Vault
+    implementation group: 'org.springframework.vault',name: 'spring-vault-core',version:'3.0.2'
+
 }
 
 tasks.named('test') {
@@ -61,6 +64,6 @@ docker {
     buildArgs(['JAR_FILE':tasks.bootJar.outputs.files.singleFile.name])
 }
 
-bootJar {
-    archiveFileName = "${project.name}.jar"
-}
+//bootJar {
+//    archiveFileName = "${project.name}.jar"
+//}
