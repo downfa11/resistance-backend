@@ -10,6 +10,7 @@ WORKDIR /workspace/app
 COPY . /workspace/app/
 RUN ls -la /workspace/app
 RUN ./gradlew build -p ${MODULE}
+
 FROM openjdk:17-ea-17-slim
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 WORKDIR /app
