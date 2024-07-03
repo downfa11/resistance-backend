@@ -1,0 +1,72 @@
+name: Docker Image CI
+
+env:
+  MODULES: |
+    business-service
+    dedicated-service
+    membership-service
+  BUILD_ID: ${{ github.sha }}
+  HELM_BRANCH: dev
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push docker images to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          for MODULE in $MODULES; do
+            HELM_VALUE=${MODULE}-chart/values-dev.yaml
+            ECR_REPOSITORY="resistance-$(echo $MODULE | cut -d '-' -f 1)"
+
+            echo "Building and pushing Docker image for $MODULE"
+
+            envsubst < Dockerfile.template | docker build -t $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f - .
+            docker push $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+            echo "Updating Helm chart for $MODULE"
+            yq -i '.image.tag = "'$IMAGE_TAG'"' helm-chart/$HELM_VALUE
+          done
+
+      - name: Checkout Helm Repository
+        uses: actions/checkout@v3
+        with:
+          repository: downfa11/k8s-Devops
+          path: helm-chart
+          ref: main
+          ssh-key: ${{ secrets.HELM_CHARTS_REPO_KEY }}
+
+      - name: Commit and Push HELM changes
+        run: |
+          cd helm-chart
+          git config --local user.email "downfa11@naver.com"
+          git config --local user.name "downfa11"
+          git add .
+          git commit -m "Commit HELM changes: ${{ github.sha }}"
+          current_branch=$(git branch --show-current)
+          git checkout -b ${{ env.HELM_BRANCH }} && git merge ${current_branch}
+          git push --force origin ${{ env.HELM_BRANCH }}
