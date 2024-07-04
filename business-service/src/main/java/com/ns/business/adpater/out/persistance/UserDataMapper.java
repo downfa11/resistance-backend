@@ -45,8 +45,11 @@ public class UserDataMapper {
     }
 
     public UserDataMembership mapToDomainJump(Long userId){
-        UserDataJpaEntity userDataJpaEntity = userDataRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+        UserDataJpaEntity userDataJpaEntity = userDataRepository.findByUserId(userId);
+
+        if (userDataJpaEntity == null) {
+            throw new RuntimeException("User not found with ID: " + userId);
+        }
 
         UserData userData = mapToDomainEntity(userDataJpaEntity);
         return mapToDomain(userData);

@@ -54,7 +54,7 @@ public class UserDataPersistanceAdapter implements RegisterUserDataPort, FindUse
 
     @Override
     public UserDataJpaEntity modifyUserData(UserData.UserId userId,UserData.UserGold userGold, UserData.UserHighscore userHighscore, UserData.UserEnergy userEnergy, UserData.UserScenario userScenario, UserData.UserHead userHead, UserData.UserBody userBody, UserData.UserArm userArm, UserData.UserHealth userHealth, UserData.UserAttack userAttack, UserData.UserCritical userCritical, UserData.UserDurability userDurability) {
-        UserDataJpaEntity entity = userDataRepository.getById(userId.getUserId());
+        UserDataJpaEntity entity = userDataRepository.findByUserId(userId.getUserId());
 
         entity.setGold(userGold.getUserGold());
         entity.setHighscore(userHighscore.getUserHighscore());

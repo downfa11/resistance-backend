@@ -96,7 +96,7 @@ public class TaskConsumer {
         try {
             UserDataMembership userData = userDataMapper.mapToDomainJump(membershipId);
             subTask.setData(userData);
-            log.info(userData.toString());
+            log.info("userData: "+userData.toString());
             subTask.setStatus("success");
         }
 
