@@ -3,8 +3,6 @@ name: Canary dedicated
 env:
   MODULE: dedicated-service
   BUILD_ID: ${{ github.sha }}
-  HELM_VALUE: dedicated-service-chart/values-dev.yaml
-  HELM_BRANCH: dev
 
 on:
   push:
@@ -42,28 +40,3 @@ jobs:
         run: |
           envsubst < Dockerfile.template | docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f - .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
-
-      - name: Checkout Helm Repository
-        uses: actions/checkout@v3
-        with:
-          repository: downfa11/k8s-Devops
-          path: helm-chart
-          ref: main
-          ssh-key: ${{ secrets.HELM_CHARTS_REPO_KEY }}
-
-      - name: Change Image tag of the Helm value
-        uses: mikefarah/yq@v4.34.1
-        with:
-          cmd: yq -i '.image.tag = "${{ env.BUILD_ID }}"' helm-chart/${{ env.HELM_VALUE }}
-
-
-      - name: Commit and Push HELM changes
-        run: |
-          cd helm-chart
-          git config --local user.email "downfa11@naver.com"
-          git config --local user.name "downfa11"
-          git add .
-          git commit -m "Commit HELM changes: ${{ env.MODULE }}:${{ env.BUILD_ID }}"
-          current_branch=$(git branch --show-current)
-          git checkout -b ${{ env.HELM_BRANCH }} && git merge ${current_branch}
-          git push origin ${{ env.HELM_BRANCH }}

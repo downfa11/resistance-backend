@@ -3,7 +3,10 @@ name: Canary membership
 env:
   MODULE: membership-service
   BUILD_ID: ${{ github.sha }}
-  HELM_VALUE: membership-service-chart/values-dev.yaml
+  HELM_VALUE: |
+    membership-service-chart/values-dev.yaml
+    dedicated-service-chart/values-dev.yaml
+    business-service-chart/values-dev.yaml
   HELM_BRANCH: dev
 
 on:
@@ -53,9 +56,11 @@ jobs:
 
       - name: Change Image tag of the Helm value
         uses: mikefarah/yq@v4.34.1
-        with:
-          cmd: yq -i '.image.tag = "${{ env.BUILD_ID }}"' helm-chart/${{ env.HELM_VALUE }}
-
+        run: |
+          for file in ${{ env.HELM_VALUE }}; do
+            yq -i '.image.tag = "${{ env.BUILD_ID }}"' "helm-chart/$file"
+          done
+      
 
       - name: Commit and Push HELM changes
         run: |

@@ -35,8 +35,7 @@ jobs:
           REPOSITORY: resistance-membership
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          envsubst < Dockerfile.template > Dockerfile
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f Dockerfile .
+          envsubst < Dockerfile.template | docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f - .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
       - name: Checkout Helm Repository
