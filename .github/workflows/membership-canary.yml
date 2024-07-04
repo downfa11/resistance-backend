@@ -72,7 +72,6 @@ jobs:
           git config --local user.name "downfa11"
           git add .
           git commit -m "Commit HELM changes: ${{ env.MODULE }}:${{ env.BUILD_ID }}"
-          # current_branch=$(git branch --show-current)
-          git checkout -b ${{ env.HELM_BRANCH }} # && git merge ${current_branch}
-          git pull --rebase origin ${{ env.HELM_BRANCH }}
-          git push origin ${{ env.HELM_BRANCH }}
+          current_branch=$(git branch --show-current)
+          git checkout -b ${{ env.HELM_BRANCH }} && git merge ${current_branch}
+          git push --force origin ${{ env.HELM_BRANCH }}
