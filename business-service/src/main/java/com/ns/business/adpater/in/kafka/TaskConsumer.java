@@ -34,7 +34,9 @@ public class TaskConsumer {
     private final UserDataMapper userDataMapper;
 
     public TaskConsumer(@Value("${kafka.clusters.bootstrapservers}") String bootstrapServers,
-                        @Value("${task.topic}")String topic, TaskResultProducer taskResultProducer,FindUserDataPort findUserDataPort,RegisterUserDataPort registerUserDataPort,
+                        @Value("${task.topic}")String topic,
+                        @Value("${consumer.group}") String groupId,
+                        TaskResultProducer taskResultProducer,FindUserDataPort findUserDataPort,RegisterUserDataPort registerUserDataPort,
                         UserDataMapper userDataMapper) {
 
         this.taskResultProducer = taskResultProducer;
@@ -44,9 +46,12 @@ public class TaskConsumer {
 
         Properties props = new Properties();
         props.put("bootstrap.servers", bootstrapServers);
-        props.put("group.id", "my-group");
+        props.put("group.id", groupId);
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+
+        log.info("current business Pod's consumer-group : "+groupId);
+
         this.consumer = new KafkaConsumer<>(props);
         consumer.subscribe(Collections.singletonList(topic));
         Thread consumerThread = new Thread(() -> {

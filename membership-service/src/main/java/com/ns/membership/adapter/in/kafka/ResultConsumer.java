@@ -32,18 +32,21 @@ public class ResultConsumer {
     private final ObjectMapper mapper;
 
     public ResultConsumer(@Value("${kafka.clusters.bootstrapservers}") String bootstrapServers,
-                          @Value("${task.result.topic}")String topic, LoggingProducer loggingProducer, CountDownLatchManager countDownLatchManager) {
+                          @Value("${task.result.topic}")String topic,
+                          @Value("${consumer.group}") String groupId,
+                          LoggingProducer loggingProducer, CountDownLatchManager countDownLatchManager) {
         this.loggingProducer = loggingProducer;
         this.countDownLatchManager = countDownLatchManager;
         this.mapper = new ObjectMapper();
 
         Properties props = new Properties();
         props.put("bootstrap.servers", bootstrapServers);
-        props.put("group.id", "my-group");
+        props.put("group.id", groupId);
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         this.consumer = new KafkaConsumer<>(props);
         consumer.subscribe(Collections.singletonList(topic));
+        log.info("current membership Pod's consumer-group : "+groupId);
 
         Thread consumerThread = new Thread(() -> {
             try {
