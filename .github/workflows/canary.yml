@@ -35,7 +35,8 @@ jobs:
           REPOSITORY: resistance-membership
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          envsubst < Dockerfile.template | docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f -
+          envsubst < Dockerfile.template > Dockerfile
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f Dockerfile .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
       - name: Checkout Helm Repository
@@ -58,8 +59,7 @@ jobs:
           git config --local user.name "downfa11"
           git add .
           git commit -m "Commit HELM changes: membership-service:${{ env.BUILD_ID }}"
-          current_branch=$(git branch --show-current)
-          git checkout -b dev && git merge ${current_branch}
+          git checkout -b dev && git merge main
           git push origin dev
 
   dedicated:
@@ -89,7 +89,8 @@ jobs:
           REPOSITORY: resistance-dedicated
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          envsubst < Dockerfile.template | docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f -
+          envsubst < Dockerfile.template > Dockerfile
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f Dockerfile .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
       - name: Checkout Helm Repository
@@ -112,8 +113,7 @@ jobs:
           git config --local user.name "downfa11"
           git add .
           git commit -m "Commit HELM changes: dedicated-service:${{ env.BUILD_ID }}"
-          current_branch=$(git branch --show-current)
-          git checkout -b dev && git merge ${current_branch}
+          git checkout -b dev && git merge main
           git push origin dev
 
   business:
@@ -143,7 +143,8 @@ jobs:
           REPOSITORY: resistance-business
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          envsubst < Dockerfile.template | docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f -
+          envsubst < Dockerfile.template > Dockerfile
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f Dockerfile .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
       - name: Checkout Helm Repository
@@ -166,6 +167,5 @@ jobs:
           git config --local user.name "downfa11"
           git add .
           git commit -m "Commit HELM changes: business-service:${{ env.BUILD_ID }}"
-          current_branch=$(git branch --show-current)
-          git checkout -b dev && git merge ${current_branch}
+          git checkout -b dev && git merge main
           git push origin dev
