@@ -55,7 +55,6 @@ jobs:
           ssh-key: ${{ secrets.HELM_CHARTS_REPO_KEY }}
 
       - name: Change Image tag of the Helm value
-        uses: mikefarah/yq@v4.34.1
         run: |
           for file in ${{ env.HELM_VALUE }}; do
             yq -i '.image.tag = "${{ env.BUILD_ID }}"' "helm-chart/$file"
