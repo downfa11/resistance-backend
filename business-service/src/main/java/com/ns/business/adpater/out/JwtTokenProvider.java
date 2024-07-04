@@ -1,11 +1,11 @@
-package com.ns.dedicated.adpater.out;
-
+package com.ns.business.adpater.out;
 
 import io.jsonwebtoken.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+
 
 @Component
 public class JwtTokenProvider {

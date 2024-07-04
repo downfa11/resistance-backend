@@ -35,6 +35,8 @@ public class BoardController {
 
     @PostMapping("/add")
     public Board add(@RequestBody AddBoardRequest request) {
+        Long memberId = jwtTokenProvider.getMembershipIdbyToken();
+
         RegisterBoardCommand command = RegisterBoardCommand.builder()
                 .title(request.getTitle())
                 .contents(request.getContents())
@@ -45,6 +47,7 @@ public class BoardController {
 
     @PostMapping("/add/temp")
     public Board addTemp() {
+        Long memberId = jwtTokenProvider.getMembershipIdbyToken();
         Random random = new Random();
 
         RegisterBoardCommand command = RegisterBoardCommand.builder()
@@ -57,6 +60,8 @@ public class BoardController {
 
     @PatchMapping("/update")
     public ResponseEntity<Board> updateBoard(@RequestBody UpdateBoardRequest request) {
+        Long memberId = jwtTokenProvider.getMembershipIdbyToken();
+
         ModifyBoardCommand command = ModifyBoardCommand.builder()
                 .boardId(request.getBoardId())
                 .title(request.getTitle())
@@ -90,6 +95,8 @@ public class BoardController {
 
     @DeleteMapping("{boardId}")
     void deleteBoardByBoardId(@PathVariable Long boardId){
+        Long memberId = jwtTokenProvider.getMembershipIdbyToken();
+
         DeleteBoardCommand command = DeleteBoardCommand.builder()
         .boardId(boardId).build();
 
@@ -98,7 +105,7 @@ public class BoardController {
 
     @GetMapping("/polling")
     public ResponseEntity<String> PostPolling(){
-        Long memberId = jwtTokenProvider.getMembershipIdbyToken();
+
         return ResponseEntity.ok().body(findBoardUseCase.findLatestPostTimeStamp());
     }
 }

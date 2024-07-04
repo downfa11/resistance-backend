@@ -124,11 +124,11 @@ public class TaskConsumer {
                     new UserData.UserDurability(10)
             );
 
-            log.info(jpaEntity.getUserId()+"번 사용자를 생성했습니다.");
+            log.info(jpaEntity.getUserId()+"번 데이터인 "+membershipId+" 사용자를 생성했습니다.");
             if(jpaEntity!=null)
                 subTask.setStatus("success");
 
-        }catch(RuntimeException e){
+        } catch(RuntimeException e){
             log.error("Error processing subatsk : "+e.getMessage());
             subTask.setData(null);
             subTask.setStatus("fail");

@@ -2,6 +2,7 @@ package com.ns.business.adpater.in.web;
 
 import com.ns.business.adpater.in.web.dto.ModifyUserDataRequest;
 import com.ns.business.adpater.in.web.dto.RegisterUserDataRequest;
+import com.ns.business.adpater.out.JwtTokenProvider;
 import com.ns.business.application.port.in.FindUserDataUseCase;
 import com.ns.business.application.port.in.ModifyUserDataUseCase;
 import com.ns.business.application.port.in.RegisterUserDataUseCase;
@@ -21,9 +22,12 @@ public class UserDataController {
     private final RegisterUserDataUseCase registerUserDataUseCase;
     private final ModifyUserDataUseCase modifyUserDataUseCase;
     private final FindUserDataUseCase findUserDataUseCase;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping(path = "/register")
     ResponseEntity<UserData> registerUserData(@RequestBody RegisterUserDataRequest request){
+        Long memberId = jwtTokenProvider.getMembershipIdbyToken();
+
         RegisterUserDataCommand command = RegisterUserDataCommand.builder()
                 .userId(request.getUserId())
                 .name(request.getName())
@@ -46,6 +50,8 @@ public class UserDataController {
 
     @PostMapping(path="/update")
     ResponseEntity<UserData> modifyUserDataByUserId(@RequestBody ModifyUserDataRequest request){
+        Long memberId = jwtTokenProvider.getMembershipIdbyToken();
+
         ModifyUserDataCommand command = ModifyUserDataCommand.builder()
                 .userId(request.getUserId())
                 .gold(request.getGold())
@@ -67,6 +73,8 @@ public class UserDataController {
 
     @GetMapping(path="/{userId}")
     ResponseEntity<UserData> findUserDataByUserId(@PathVariable Long userId){
+        Long memberId = jwtTokenProvider.getMembershipIdbyToken();
+
         FindUserDataCommand command = FindUserDataCommand.builder()
                 .userId(userId)
                 .build();
