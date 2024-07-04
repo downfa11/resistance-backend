@@ -73,5 +73,6 @@ jobs:
           git add .
           git commit -m "Commit HELM changes: ${{ env.MODULE }}:${{ env.BUILD_ID }}"
           # current_branch=$(git branch --show-current)
-          git checkout -b ${{ env.HELM_BRANCH }} # && git merge ${current_branch}
+          git checkout -b ${{ env.HELM_BRANCH }}
+          git pull origin ${{ env.HELM_BRANCH }}   # && git merge ${current_branch}
           git push origin ${{ env.HELM_BRANCH }}
