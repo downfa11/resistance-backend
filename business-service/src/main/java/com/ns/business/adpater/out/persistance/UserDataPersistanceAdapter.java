@@ -90,7 +90,7 @@ public class UserDataPersistanceAdapter implements RegisterUserDataPort, FindUse
     }
     @Override
     public UserDataJpaEntity findUserData(UserData.UserId userId) {
-        return userDataRepository.getById(userId.getUserId());
+        return userDataRepository.findByUserId(userId.getUserId());
     }
 
 }

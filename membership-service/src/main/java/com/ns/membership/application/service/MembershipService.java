@@ -80,6 +80,7 @@ public class MembershipService implements RegisterMembershipUseCase, ModifyMembe
 
             sendTaskPort.sendTaskPort(task);
             countDownLatchManager.addCountDownLatch(task.getTaskID());
+            log.info("countDownLatchManager await "+task.getTaskID()+" id:"+task.getMembershipId());
 
             try {
                 countDownLatchManager.getCountDownLatch(task.getTaskID()).await();

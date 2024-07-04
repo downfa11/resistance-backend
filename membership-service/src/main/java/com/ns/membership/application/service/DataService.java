@@ -63,10 +63,9 @@ public class DataService implements UserDataRequestUseCase {
                     .subTaskList(subtasklist)
                     .build();
 
-
-
             sendTaskPort.sendTaskPort(task);
             countDownLatchManager.addCountDownLatch(task.getTaskID());
+
 
             countDownLatchManager.getCountDownLatch(task.getTaskID()).await();
 

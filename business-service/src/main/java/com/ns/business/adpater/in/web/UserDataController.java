@@ -73,7 +73,6 @@ public class UserDataController {
 
     @GetMapping(path="/{userId}")
     ResponseEntity<UserData> findUserDataByUserId(@PathVariable Long userId){
-        Long memberId = jwtTokenProvider.getMembershipIdbyToken();
 
         FindUserDataCommand command = FindUserDataCommand.builder()
                 .userId(userId)

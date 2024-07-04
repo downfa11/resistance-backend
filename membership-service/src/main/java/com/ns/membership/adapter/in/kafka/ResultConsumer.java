@@ -47,7 +47,7 @@ public class ResultConsumer {
                     ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(1));
                     for (ConsumerRecord<String, String> record : records) {
                         // record: RechargingMoneyTask, ( all subtask is don)
-
+                        System.out.println("Received message: " + record.value());
 
                         Task task;
                         try {
