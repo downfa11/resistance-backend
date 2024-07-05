@@ -16,5 +16,7 @@ public interface MembershipRepository extends JpaRepository<MembershipJpaEntity,
     List<MembershipJpaEntity> getRandomAlly(String membershipId, int count);
 
     Optional<MembershipJpaEntity> findByAddressAndEmail(String address, String email);
+    Optional<MembershipJpaEntity> findByAddress(String address);
+    Optional<MembershipJpaEntity> findByEmail(String email);
 
 }

@@ -15,6 +15,7 @@ import com.ns.dedicated.application.port.in.command.RegisterBoardCommand;
 import com.ns.dedicated.domain.Board;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,9 +34,15 @@ public class BoardController {
     private final DeleteBoardUseCase deleteBoardUseCase;
     private final JwtTokenProvider jwtTokenProvider;
 
+    private final Long adminId=1L;
+
     @PostMapping("/add")
     public Board add(@RequestBody AddBoardRequest request) {
         Long memberId = jwtTokenProvider.getMembershipIdbyToken();
+
+        if(memberId!=adminId){
+            throw new RuntimeException("not allow add - id:"+memberId);
+        }
 
         RegisterBoardCommand command = RegisterBoardCommand.builder()
                 .title(request.getTitle())
@@ -48,6 +55,11 @@ public class BoardController {
     @PostMapping("/add/temp")
     public Board addTemp() {
         Long memberId = jwtTokenProvider.getMembershipIdbyToken();
+
+        if(memberId!=adminId){
+            throw new RuntimeException("not allow add temp - id:"+memberId);
+        }
+
         Random random = new Random();
 
         RegisterBoardCommand command = RegisterBoardCommand.builder()
@@ -61,6 +73,10 @@ public class BoardController {
     @PatchMapping("/update")
     public ResponseEntity<Board> updateBoard(@RequestBody UpdateBoardRequest request) {
         Long memberId = jwtTokenProvider.getMembershipIdbyToken();
+
+        if(memberId!=adminId){
+            throw new RuntimeException("not allow update - id:"+memberId);
+        }
 
         ModifyBoardCommand command = ModifyBoardCommand.builder()
                 .boardId(request.getBoardId())
@@ -96,6 +112,10 @@ public class BoardController {
     @DeleteMapping("{boardId}")
     void deleteBoardByBoardId(@PathVariable Long boardId){
         Long memberId = jwtTokenProvider.getMembershipIdbyToken();
+
+        if(memberId!=adminId){
+            throw new RuntimeException("not allow delete - id:"+memberId);
+            }
 
         DeleteBoardCommand command = DeleteBoardCommand.builder()
         .boardId(boardId).build();

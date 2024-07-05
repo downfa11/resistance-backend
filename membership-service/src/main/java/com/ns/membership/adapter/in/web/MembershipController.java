@@ -44,6 +44,7 @@ public class MembershipController {
         // request -> Command로 추상화
         // UseCase ~~(request x, command)
 
+
         RegisterMembershipCommand command = RegisterMembershipCommand.builder()
                 .name(request.getName())
                 .address(request.getAddress())

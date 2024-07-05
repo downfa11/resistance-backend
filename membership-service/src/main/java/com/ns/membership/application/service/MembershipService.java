@@ -49,6 +49,17 @@ public class MembershipService implements RegisterMembershipUseCase, ModifyMembe
         String encryptedAddress = vaultAdapter.encrypt(command.getAddress());
 
         // db는 외부 시스템이라 이용하기 위해선 port, adapter를 통해서 나갈 수 있다.
+        MembershipJpaEntity memberByAdress = findMembershipPort.findMembershipByAddress(
+                new Membership.MembershipAddress(encryptedAddress)
+        );
+
+        MembershipJpaEntity memberByEmail = findMembershipPort.findMembershipByEmail(
+                new Membership.MembershipEmail(command.getEmail())
+        );
+
+        if(memberByAdress!=null || memberByEmail!=null){
+            return null;
+        }
 
         MembershipJpaEntity jpaEntity = registerMembershipPort.createMembership(
                 new Membership.MembershipName(command.getName()),

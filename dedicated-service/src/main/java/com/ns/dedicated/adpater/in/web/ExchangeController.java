@@ -15,10 +15,17 @@ public class ExchangeController {
     private final ExchangeUseCase exchangeUseCase;
     private final JwtTokenProvider jwtTokenProvider;
 
+    private final Long adminId=1L;
+
     @GetMapping("/rates")
     public ExchangeRateResponse getExchangeRates(){
 
         Long memberId = jwtTokenProvider.getMembershipIdbyToken();
+
+        if(memberId!=adminId){
+            throw new RuntimeException("not allow getExchangeRates - id:"+memberId);
+        }
+
         ExchangeRateResponse response = ExchangeRateResponse.builder()
                 .exchangeRates(exchangeUseCase.getExchangeRates()).build();
         return response;
@@ -26,6 +33,15 @@ public class ExchangeController {
 
     @GetMapping("init")
     public ExchangeRateResponse initExchangeRates() { exchangeUseCase.initExchangeRates();
+
+
+        Long memberId = jwtTokenProvider.getMembershipIdbyToken();
+
+
+        if(memberId!=adminId){
+            throw new RuntimeException("not allow initExchangeRates - id:"+memberId);
+        }
+
         ExchangeRateResponse response = ExchangeRateResponse.builder()
                 .exchangeRates(exchangeUseCase.getExchangeRates()).build();
         return response;
@@ -43,7 +59,12 @@ public class ExchangeController {
     @PostMapping("/set/{money}")
     public ExchangeRateResponse setExchangeRates(@PathVariable String money){
 
+
         Long memberId = jwtTokenProvider.getMembershipIdbyToken();
+
+        if(memberId!=adminId){
+            throw new RuntimeException("not allow setExchangeRates - id:"+memberId);
+        }
 
         exchangeUseCase.setExchangeRates(money);
         ExchangeRateResponse response = ExchangeRateResponse.builder()

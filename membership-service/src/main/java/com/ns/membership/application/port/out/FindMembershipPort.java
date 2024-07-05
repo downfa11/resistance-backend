@@ -13,4 +13,13 @@ public interface FindMembershipPort {
             Membership.MembershipAddress address,
             Membership.MembershipEmail email
     );
+
+    MembershipJpaEntity findMembershipByEmail(
+            Membership.MembershipEmail email
+    );
+
+    MembershipJpaEntity findMembershipByAddress(
+            Membership.MembershipAddress address
+    );
+
 }
