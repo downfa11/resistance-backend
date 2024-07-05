@@ -39,6 +39,9 @@ public class FriendController {
         //Todo 친구 목록을 표시합니다.
         String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
 
+        if(memberId != membershipId)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
         FindMembershipCommand findCmmand = FindMembershipCommand.builder()
                 .membershipId(memberId)
                 .build();
@@ -78,6 +81,9 @@ public class FriendController {
         //Todo 친구신청 목록을 표시합니다.
         String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
 
+        if(memberId != membershipId)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
         FindMembershipCommand findCmmand = FindMembershipCommand.builder()
                 .membershipId(memberId)
                 .build();
@@ -116,6 +122,9 @@ public class FriendController {
         //Todo 친구 신청합니다.
         String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
 
+        if(memberId != request.getMembershipId().toString())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
         FindMembershipCommand findCmmand = FindMembershipCommand.builder()
                 .membershipId(memberId)
                 .build();
@@ -128,10 +137,10 @@ public class FriendController {
 
 
         try {
-            String membershipId = request.getMembershipId().toString();
+            String reqMembershipId = request.getMembershipId().toString();
             String targetmembershipId = request.getTargetId().toString();
 
-            Membership membership = findMembership(membershipId);
+            Membership membership = findMembership(reqMembershipId);
             Membership targetMembership = findMembership(targetmembershipId);
 
             if (membership == null)
@@ -178,10 +187,10 @@ public class FriendController {
         }
 
         try {
-            String membershipId = request.getMembershipId().toString();
+            String reqMembershipId = request.getMembershipId().toString();
             String targetmembershipId = request.getTargetId().toString();
 
-            Membership membership = findMembership(membershipId);
+            Membership membership = findMembership(reqMembershipId);
             Membership targetMembership = findMembership(targetmembershipId);
 
             if (membership == null)
@@ -230,6 +239,9 @@ public class FriendController {
         //Todo 친구를 삭제합니다.
 
         String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
+
+        if(memberId != request.getMembershipId().toString())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         FindMembershipCommand findCmmand = FindMembershipCommand.builder()
                 .membershipId(memberId)

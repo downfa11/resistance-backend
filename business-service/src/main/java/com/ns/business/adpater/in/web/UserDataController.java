@@ -11,6 +11,7 @@ import com.ns.business.application.port.in.command.ModifyUserDataCommand;
 import com.ns.business.application.port.in.command.RegisterUserDataCommand;
 import com.ns.business.domain.UserData;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +28,9 @@ public class UserDataController {
     @PostMapping(path = "/register")
     ResponseEntity<UserData> registerUserData(@RequestBody RegisterUserDataRequest request){
         Long memberId = jwtTokenProvider.getMembershipIdbyToken();
+
+        if(memberId != request.getUserId())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         RegisterUserDataCommand command = RegisterUserDataCommand.builder()
                 .userId(request.getUserId())
@@ -52,20 +56,24 @@ public class UserDataController {
     ResponseEntity<UserData> modifyUserDataByUserId(@RequestBody ModifyUserDataRequest request){
         Long memberId = jwtTokenProvider.getMembershipIdbyToken();
 
-        ModifyUserDataCommand command = ModifyUserDataCommand.builder()
-                .userId(request.getUserId())
-                .gold(request.getGold())
-                .highscore(request.getHighscore())
-                .energy(request.getEnergy())
-                .scenario(request.getScenario())
-                .head(request.getHead())
-                .body(request.getBody())
-                .arm(request.getArm())
-                .health(request.getHealth())
-                .attack(request.getAttack())
-                .critical(request.getCritical())
-                .durability(request.getDurability())
-                .build();
+        if(memberId != request.getUserId())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+            ModifyUserDataCommand command = ModifyUserDataCommand.builder()
+                    .userId(request.getUserId())
+                    .gold(request.getGold())
+                    .highscore(request.getHighscore())
+                    .energy(request.getEnergy())
+                    .scenario(request.getScenario())
+                    .head(request.getHead())
+                    .body(request.getBody())
+                    .arm(request.getArm())
+                    .health(request.getHealth())
+                    .attack(request.getAttack())
+                    .critical(request.getCritical())
+                    .durability(request.getDurability())
+                    .build();
+
 
         UserData userData = modifyUserDataUseCase.modifyUserData(command);
         return ResponseEntity.ok(userData);

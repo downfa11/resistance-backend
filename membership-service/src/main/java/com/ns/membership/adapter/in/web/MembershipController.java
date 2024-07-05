@@ -16,6 +16,7 @@ import com.ns.membership.domain.Membership;
 import com.ns.membership.domain.userData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -57,6 +58,9 @@ public class MembershipController {
     ResponseEntity<Membership> modifyMembershipByMemberId(@RequestBody ModifyMembershipRequest request){
         String membershipId = jwtTokenProvider.getMembershipIdbyToken().toString();
 
+        if(membershipId != request.getMembershipId().toString())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
         FindMembershipCommand findCmmand = FindMembershipCommand.builder()
                 .membershipId(membershipId)
                 .build();
@@ -91,6 +95,9 @@ public class MembershipController {
     @GetMapping (path = "/data/{membershipId}")
     ResponseEntity<userDataCommands> getUserData(@PathVariable String membershipId){
         String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
+
+        if(memberId != membershipId)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         FindMembershipCommand findCmmand = FindMembershipCommand.builder()
                 .membershipId(memberId)
