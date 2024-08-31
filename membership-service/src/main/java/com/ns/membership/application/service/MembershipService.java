@@ -18,6 +18,7 @@ import com.ns.membership.application.port.out.ModifyMembershipPort;
 import com.ns.membership.application.port.out.RegisterMembershipPort;
 import com.ns.membership.application.port.out.SendTaskPort;
 import com.ns.membership.domain.Membership;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -49,15 +50,22 @@ public class MembershipService implements RegisterMembershipUseCase, ModifyMembe
         String encryptedAddress = vaultAdapter.encrypt(command.getAddress());
 
         // db는 외부 시스템이라 이용하기 위해선 port, adapter를 통해서 나갈 수 있다.
-        MembershipJpaEntity memberByAdress = findMembershipPort.findMembershipByAddress(
-                new Membership.MembershipAddress(encryptedAddress)
-        );
+        MembershipJpaEntity memberByAddress = null;
+        MembershipJpaEntity memberByEmail = null;
 
-        MembershipJpaEntity memberByEmail = findMembershipPort.findMembershipByEmail(
-                new Membership.MembershipEmail(command.getEmail())
-        );
+        try {
+            memberByAddress = findMembershipPort.findMembershipByAddress(
+                    new Membership.MembershipAddress(encryptedAddress)
+            );
 
-        if(memberByAdress!=null || memberByEmail!=null){
+            memberByEmail = findMembershipPort.findMembershipByEmail(
+                    new Membership.MembershipEmail(command.getEmail())
+            );
+        } catch (EntityNotFoundException e) {
+            log.info("EntityNotFoundException register membership.");
+        }
+
+        if(memberByAddress!=null || memberByEmail!=null){
             return null;
         }
 

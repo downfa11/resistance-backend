@@ -21,10 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -51,6 +48,23 @@ public class MembershipController {
                 .email(request.getEmail())
                 .isValid(true)
                 .build();
+
+        return registerMembershipUseCase.registerMembership(command);
+    }
+
+    @GetMapping (path = "/register/temp")
+    Membership registerMembershipTemp(){
+
+        Random random = new Random();
+
+        RegisterMembershipCommand command = RegisterMembershipCommand.builder()
+                .name("name:" + random.nextInt(10000))
+                .address("address:" + random.nextInt(10000))
+                .email("email: " + random.nextInt(10000))
+                .isValid(true)
+                .build();
+
+        log.info("dummy create : "+command);
 
         return registerMembershipUseCase.registerMembership(command);
     }
@@ -126,10 +140,10 @@ public class MembershipController {
     @GetMapping("/ally/random/{membershipId}")
     ResponseEntity<userDataCommands> getAllyRandom(@PathVariable String membershipId){
 
-        String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
+        //String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
 
         FindMembershipCommand findCmmand = FindMembershipCommand.builder()
-                .membershipId(memberId)
+                .membershipId(membershipId)
                 .build();
 
         Membership membership = findMembershipUseCase.findMembership(findCmmand);

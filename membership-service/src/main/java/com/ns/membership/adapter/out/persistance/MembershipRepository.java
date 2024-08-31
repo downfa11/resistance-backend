@@ -12,8 +12,9 @@ public interface MembershipRepository extends JpaRepository<MembershipJpaEntity,
     @Query("SELECT m FROM MembershipJpaEntity m LEFT JOIN FETCH m.friends LEFT JOIN FETCH m.wantedFriends WHERE m.membershipId = :membershipId")
     Optional<MembershipJpaEntity> findById(@Param("membershipId") Long membershipId);
 
-    @Query(value = "SELECT * FROM resistance.membership WHERE membership_id != ?1 ORDER BY RAND() LIMIT ?2", nativeQuery = true)
+    @Query(value = "SELECT * FROM resistance.membership WHERE membership_id != ?1 AND membership_id >= (SELECT FLOOR(RAND() * (SELECT MAX(membership_id) FROM resistance.membership))) LIMIT ?2", nativeQuery = true)
     List<MembershipJpaEntity> getRandomAlly(String membershipId, int count);
+
 
     Optional<MembershipJpaEntity> findByAddressAndEmail(String address, String email);
     Optional<MembershipJpaEntity> findByAddress(String address);
