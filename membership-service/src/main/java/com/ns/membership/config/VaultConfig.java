@@ -1,4 +1,4 @@
-package com.ns.membership;
+package com.ns.membership.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

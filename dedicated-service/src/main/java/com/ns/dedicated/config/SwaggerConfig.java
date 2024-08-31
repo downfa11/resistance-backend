@@ -1,4 +1,4 @@
-package com.ns.dedicated;
+package com.ns.dedicated.config;
 
 
 import io.swagger.v3.oas.models.OpenAPI;

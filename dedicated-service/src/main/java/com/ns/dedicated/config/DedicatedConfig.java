@@ -1,5 +1,4 @@
-package com.ns.membership;
-
+package com.ns.dedicated.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -19,9 +18,10 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
 
+
 @Configuration
 @ComponentScan("com.ns.common") //common에 있는 걸 빈으로 등록하고 시작
-public class membershipConfig {
+public class DedicatedConfig {
     @Value("${spring.data.redis.host}")
     private String redisHost;
 

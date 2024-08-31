@@ -1,4 +1,4 @@
-package com.ns.dedicated;
+package com.ns.dedicated.config;
 
 
 import org.springframework.context.annotation.Configuration;

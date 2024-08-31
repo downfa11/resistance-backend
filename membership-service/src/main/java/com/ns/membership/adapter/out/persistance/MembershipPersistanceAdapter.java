@@ -44,7 +44,7 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
     @Override
     public MembershipJpaEntity findMembership(Membership.MembershipId membershipId) {
         Long id = Long.parseLong(membershipId.getMembershipId());
-        MembershipJpaEntity membershipJpaEntity = membershipRepository.findById(id)
+        MembershipJpaEntity membershipJpaEntity = membershipRepository.findByMembershipId(id)
                 .orElseThrow(() -> new EntityNotFoundException("Membership not found for id: " + id));
         String encryptedEmail = membershipJpaEntity.getEmail();
         //String decrptedEmail = vaultAdapter.decrypt(encryptedEmail);

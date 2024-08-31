@@ -130,7 +130,7 @@ public class BoardPersistanceAdapter implements RegisterBoardPort, FindBoardPort
 
     @Override
     public BoardJpaEntity findTopByOrderByCreatedAtDesc() {
-        Optional<BoardJpaEntity> boardOptional = boardRepository.findTopByOrderByCreatedAtDesc();
+        Optional<BoardJpaEntity> boardOptional = boardRepository.findLatestBoard();
         return boardOptional.get();
     }
 
