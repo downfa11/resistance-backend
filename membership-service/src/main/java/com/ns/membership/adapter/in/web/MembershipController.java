@@ -14,6 +14,7 @@ import com.ns.membership.application.port.in.command.RegisterMembershipCommand;
 import com.ns.membership.application.port.in.command.UserDataRequestCommand;
 import com.ns.membership.domain.Membership;
 import com.ns.membership.domain.userData;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -37,19 +38,27 @@ public class MembershipController {
     private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping (path = "/register")
-    Membership registerMembership(@RequestBody RegisterMembershipRequest request){
+    public ResponseEntity<String> registerMembership(HttpSession httpSession, @RequestBody RegisterMembershipRequest request){
         // request -> Command로 추상화
         // UseCase ~~(request x, command)
 
+        String sessionCode = (String) httpSession.getAttribute("registerCode");
+
+        if (sessionCode == null || !sessionCode.equals(request.getVerify())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 코드가 유효하지 않거나 일치하지 않습니다.");
+        }
 
         RegisterMembershipCommand command = RegisterMembershipCommand.builder()
                 .name(request.getName())
+                .account(request.getAccount())
+                .password(request.getPassword())
                 .address(request.getAddress())
                 .email(request.getEmail())
                 .isValid(true)
                 .build();
 
-        return registerMembershipUseCase.registerMembership(command);
+        registerMembershipUseCase.registerMembership(command);
+        return ResponseEntity.ok("회원가입이 완료되었습니다.");
     }
 
     @GetMapping (path = "/register/temp")
@@ -59,6 +68,8 @@ public class MembershipController {
 
         RegisterMembershipCommand command = RegisterMembershipCommand.builder()
                 .name("name:" + random.nextInt(10000))
+                .account("account:" + random.nextInt(10000))
+                .password("password:" + random.nextInt(10000))
                 .address("address:" + random.nextInt(10000))
                 .email("email: " + random.nextInt(10000))
                 .isValid(true)
@@ -89,6 +100,8 @@ public class MembershipController {
         ModifyMembershipCommand modifyCommand = ModifyMembershipCommand.builder()
                 .membershipId(request.getMembershipId())
                 .name(request.getName())
+                .account(request.getAccount())
+                .password(request.getPassword())
                 .address(request.getAddress())
                 .email(request.getEmail())
                 .isValid(request.isValid())
@@ -140,8 +153,6 @@ public class MembershipController {
     @GetMapping("/ally/random/{membershipId}")
     ResponseEntity<userDataCommands> getAllyRandom(@PathVariable String membershipId){
 
-        //String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
-
         FindMembershipCommand findCmmand = FindMembershipCommand.builder()
                 .membershipId(membershipId)
                 .build();
@@ -166,4 +177,6 @@ public class MembershipController {
                         .build()
         );
     }
+
+
 }

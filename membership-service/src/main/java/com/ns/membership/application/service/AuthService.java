@@ -18,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Member;
+
 @RequiredArgsConstructor
 @Service
 @Slf4j
@@ -33,11 +35,12 @@ public class AuthService implements LoginMembershipUseCase {
     public JWtToken LoginMembership(LoginMembershipCommand command) {
 
 
-        String email = command.getEmail();
-        String encryptedAddress = vaultAdapter.encrypt(command.getAddress());
-        MembershipJpaEntity membershipJpaEntity = findMembershipPort.findMembershipByEmailAndAddress(
-                new Membership.MembershipAddress(encryptedAddress),
-                new Membership.MembershipEmail(email)
+        String account = command.getAccount();
+        String encryptedPassword = vaultAdapter.encrypt(command.getPassword());
+        MembershipJpaEntity membershipJpaEntity = findMembershipPort.findMembershipByAccountAndPassword(
+                new Membership.MembershipAccount(account),
+                new Membership.MembershipPassword(encryptedPassword)
+
         );
 
 
@@ -46,7 +49,8 @@ public class AuthService implements LoginMembershipUseCase {
             String membershipId = membershipJpaEntity.getMembershipId().toString();
 
             String jwtToken = authMembershipPort.generateJwtToken(
-                    new Membership.MembershipId(membershipId)
+                    new Membership.MembershipId(membershipId),
+                    new Membership.MembershipRole(membershipJpaEntity.getRole())
             );
             String refreshToken = authMembershipPort.generateRefreshToken(
                     new Membership.MembershipId(membershipId)
@@ -55,12 +59,15 @@ public class AuthService implements LoginMembershipUseCase {
             modifyMembershipPort.modifyMembership(
                     new Membership.MembershipId(membershipId),
                     new Membership.MembershipName(membershipJpaEntity.getName()),
+                    new Membership.MembershipAccount(membershipJpaEntity.getAccount()),
+                    new Membership.MembershipPassword(membershipJpaEntity.getPassword()),
                     new Membership.MembershipAddress(membershipJpaEntity.getAddress()),
                     new Membership.MembershipEmail(membershipJpaEntity.getEmail()),
                     new Membership.MembershipIsValid(membershipJpaEntity.isValid()),
                     new Membership.Friends(membershipJpaEntity.getFriends()),
                     new Membership.WantedFriends(membershipJpaEntity.getWantedFriends()),
-                    new Membership.RefreshToken(refreshToken)
+                    new Membership.RefreshToken(refreshToken),
+                    new Membership.MembershipRole(membershipJpaEntity.getRole())
             );
 
             return JWtToken.generateJwtToken(
@@ -88,7 +95,8 @@ public class AuthService implements LoginMembershipUseCase {
 
             if(membershipJpaEntity.isValid()){
                 String newJwtToken = authMembershipPort.generateJwtToken(
-                        new Membership.MembershipId(membershipIdString)
+                        new Membership.MembershipId(membershipIdString),
+                        new Membership.MembershipRole(membershipJpaEntity.getRole())
                 );
 
                 return JWtToken.generateJwtToken(

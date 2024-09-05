@@ -4,7 +4,8 @@ import com.ns.membership.domain.Membership;
 
 public interface AuthMembershipPort {
     String generateJwtToken(
-            Membership.MembershipId membershipID
+            Membership.MembershipId membershipID,
+            Membership.MembershipRole membershipRole
     );
 
     String generateRefreshToken(

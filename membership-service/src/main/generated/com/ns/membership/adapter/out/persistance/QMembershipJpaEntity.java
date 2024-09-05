@@ -20,6 +20,8 @@ public class QMembershipJpaEntity extends EntityPathBase<MembershipJpaEntity> {
 
     public static final QMembershipJpaEntity membershipJpaEntity = new QMembershipJpaEntity("membershipJpaEntity");
 
+    public final StringPath account = createString("account");
+
     public final StringPath address = createString("address");
 
     public final StringPath email = createString("email");
@@ -32,7 +34,11 @@ public class QMembershipJpaEntity extends EntityPathBase<MembershipJpaEntity> {
 
     public final StringPath name = createString("name");
 
+    public final StringPath password = createString("password");
+
     public final StringPath refreshToken = createString("refreshToken");
+
+    public final StringPath role = createString("role");
 
     public final SetPath<Long, NumberPath<Long>> wantedFriends = this.<Long, NumberPath<Long>>createSet("wantedFriends", Long.class, NumberPath.class, PathInits.DIRECT2);
 

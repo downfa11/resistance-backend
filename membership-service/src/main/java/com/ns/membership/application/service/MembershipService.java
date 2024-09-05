@@ -47,15 +47,15 @@ public class MembershipService implements RegisterMembershipUseCase, ModifyMembe
     public Membership registerMembership(RegisterMembershipCommand command) {
 
 
-        String encryptedAddress = vaultAdapter.encrypt(command.getAddress());
+        String encryptedPassword = vaultAdapter.encrypt(command.getPassword());
 
         // db는 외부 시스템이라 이용하기 위해선 port, adapter를 통해서 나갈 수 있다.
-        MembershipJpaEntity memberByAddress = null;
+        MembershipJpaEntity memberByAccount = null;
         MembershipJpaEntity memberByEmail = null;
 
         try {
-            memberByAddress = findMembershipPort.findMembershipByAddress(
-                    new Membership.MembershipAddress(encryptedAddress)
+            memberByAccount = findMembershipPort.findMembershipByAccount(
+                    new Membership.MembershipAccount(command.getAccount())
             );
 
             memberByEmail = findMembershipPort.findMembershipByEmail(
@@ -65,18 +65,21 @@ public class MembershipService implements RegisterMembershipUseCase, ModifyMembe
             log.info("EntityNotFoundException register membership.");
         }
 
-        if(memberByAddress!=null || memberByEmail!=null){
+        if(memberByAccount!=null || memberByEmail!=null){
             return null;
         }
 
         MembershipJpaEntity jpaEntity = registerMembershipPort.createMembership(
                 new Membership.MembershipName(command.getName()),
-                new Membership.MembershipAddress(encryptedAddress),
+                new Membership.MembershipAccount(command.getAccount()),
+                new Membership.MembershipPassword(encryptedPassword),
+                new Membership.MembershipAddress(command.getAddress()),
                 new Membership.MembershipEmail(command.getEmail()),
                 new Membership.MembershipIsValid(command.isValid()),
                 new Membership.Friends(null),
                 new Membership.WantedFriends(null),
-                new Membership.RefreshToken("")
+                new Membership.RefreshToken(""),
+                new Membership.MembershipRole("ROLE_USER")
         );
 
 
@@ -120,19 +123,22 @@ public class MembershipService implements RegisterMembershipUseCase, ModifyMembe
     @CacheEvict(value="userData", key="'userData'+':'+ #command.membershipId+':'+ #command.targetIdList",allEntries = true)
     public Membership modifyMembership(ModifyMembershipCommand command) {
 
-        String encryptedAddress = vaultAdapter.encrypt(command.getAddress());
+        String encryptedPassword = vaultAdapter.encrypt(command.getPassword());
 
         // db는 외부 시스템이라 이용하기 위해선 port, adapter를 통해서 나갈 수 있다.
         MembershipJpaEntity jpaEntity = modifyMembershipPort.modifyMembership(
                 new Membership.MembershipId(command.getMembershipId()),
                 new Membership.MembershipName(command.getName()),
-                new Membership.MembershipAddress(encryptedAddress),
+                new Membership.MembershipAccount(command.getAccount()),
+                new Membership.MembershipPassword(encryptedPassword),
+                new Membership.MembershipAddress(command.getAddress()),
                 new Membership.MembershipEmail(command.getEmail()),
                 new Membership.MembershipIsValid(command.isValid()),
 
                 new Membership.Friends(command.getFriends()),
                 new Membership.WantedFriends(command.getWantedFriends()),
-                new Membership.RefreshToken(command.getRefreshToken())
+                new Membership.RefreshToken(command.getRefreshToken()),
+                new Membership.MembershipRole("ROLE_USER")
         );
 
         // entity -> Membership 도메인으로 변환해야한다.

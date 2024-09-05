@@ -17,16 +17,21 @@ public class RegisterMembershipCommand extends SelfValidating<RegisterMembership
     @NotNull
     private final String name;
     @NotNull
+    private final String account;
+    @NotNull
+    private final String password;
+    @NotNull
     private final String email;
     @NotNull
-    @NotBlank
     private final String address;
 
     @AssertTrue
     private final boolean isValid;
 
-    public RegisterMembershipCommand(String name, String email, String address, boolean isValid) {
+    public RegisterMembershipCommand(String name, String account, String password,String email, String address, boolean isValid) {
         this.name = name;
+        this.account = account;
+        this.password = password;
         this.email = email;
         this.address = address;
         this.isValid = isValid;

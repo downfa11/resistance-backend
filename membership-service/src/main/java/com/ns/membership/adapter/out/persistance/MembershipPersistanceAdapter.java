@@ -18,26 +18,34 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
     //private final VaultAdapter vaultAdapter;
 
     @Override
-    public MembershipJpaEntity createMembership(Membership.MembershipName membershipName, Membership.MembershipAddress membershipAddress, Membership.MembershipEmail membershipEmail, Membership.MembershipIsValid membershipIsValid, Membership.Friends friends, Membership.WantedFriends wantedFriends, Membership.RefreshToken refreshToken) {
+    public MembershipJpaEntity createMembership(Membership.MembershipName membershipName,Membership.MembershipAccount membershipAccount, Membership.MembershipPassword membershipPassword, Membership.MembershipAddress membershipAddress, Membership.MembershipEmail membershipEmail, Membership.MembershipIsValid membershipIsValid, Membership.Friends friends, Membership.WantedFriends wantedFriends, Membership.RefreshToken refreshToken,Membership.MembershipRole membershipRole) {
 
-        //String encryptedEmail = vaultAdapter.encrypt(membershipEmail.getEmailValue());
+        //String encryptedPassword = vaultAdapter.encrypt(membershipPassword.getPassword());
         MembershipJpaEntity jpaEntity = new MembershipJpaEntity(
                 membershipName.getNameValue(),
+                membershipAccount.getAccountValue(),
+                membershipPassword.getPasswordValue(),
                 membershipAddress.getAddressValue(),
                 membershipEmail.getEmailValue(),
                 membershipIsValid.isValidValue(),
-                friends.getFriends(),wantedFriends.getWantedfriends(),""
+                friends.getFriends(),wantedFriends.getWantedfriends(),
+                "",
+                membershipRole.getMembershipRole()
 
         );
         membershipRepository.save(jpaEntity);
-        log.info("entity encrypted Email : "+jpaEntity.getEmail());
+        log.info("entity encrypted password : "+jpaEntity.getPassword());
         return new MembershipJpaEntity(
                 jpaEntity.getMembershipId(),
                 membershipName.getNameValue(),
+                membershipAccount.getAccountValue(),
+                membershipPassword.getPasswordValue(),
                 membershipAddress.getAddressValue(),
                 membershipEmail.getEmailValue(),
                 membershipIsValid.isValidValue(),
-                friends.getFriends(),wantedFriends.getWantedfriends(),""
+                friends.getFriends(),wantedFriends.getWantedfriends(),
+                "",
+                membershipRole.getMembershipRole()
         );
     }
 
@@ -53,12 +61,25 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
     }
 
     @Override
-    public MembershipJpaEntity findMembershipByEmailAndAddress(Membership.MembershipAddress address, Membership.MembershipEmail email) {
+    public MembershipJpaEntity findMembershipByAccountOrEmail(Membership.MembershipAccount account, Membership.MembershipEmail email) {
 
-        String addressValue= address.getAddressValue();
+        String accountValue= account.getAccountValue();
         String emailValue= email.getEmailValue();
-        MembershipJpaEntity membershipJpaEntity = membershipRepository.findByAddressAndEmail(addressValue,emailValue)
-                .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + addressValue+", "+emailValue));
+        MembershipJpaEntity membershipJpaEntity = membershipRepository.findByAccountOrEmail(accountValue,emailValue)
+                .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + accountValue+", "+emailValue));
+        String encryptedEmail = membershipJpaEntity.getEmail();
+        //String decrptedEmail = vaultAdapter.decrypt(encryptedEmail);
+        //membershipJpaEntity.setEmail(encryptedEmail);
+        return membershipJpaEntity;
+    }
+
+    @Override
+    public MembershipJpaEntity findMembershipByAccountAndPassword(Membership.MembershipAccount account, Membership.MembershipPassword password) {
+
+        String accountValue= account.getAccountValue();
+        String passwordValue= password.getPasswordValue();
+        MembershipJpaEntity membershipJpaEntity = membershipRepository.findByAccountAndPassword(accountValue,passwordValue)
+                .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + accountValue+", "+passwordValue));
         String encryptedEmail = membershipJpaEntity.getEmail();
         //String decrptedEmail = vaultAdapter.decrypt(encryptedEmail);
         //membershipJpaEntity.setEmail(encryptedEmail);
@@ -75,17 +96,25 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
     }
 
     @Override
-    public MembershipJpaEntity findMembershipByAddress(Membership.MembershipAddress address) {
+    public MembershipJpaEntity findMembershipByAccount(Membership.MembershipAccount account) {
 
-        String addressValue= address.getAddressValue();
-        MembershipJpaEntity membershipJpaEntity = membershipRepository.findByAddress(addressValue)
-                .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + addressValue));
+        String accountValue= account.getAccountValue();
+        MembershipJpaEntity membershipJpaEntity = membershipRepository.findByAccount(accountValue)
+                .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + accountValue));
+        return membershipJpaEntity;
+    }
+
+    @Override
+    public MembershipJpaEntity findMembershipByName(Membership.MembershipName name) {
+        String nameValue= name.getNameValue();
+        MembershipJpaEntity membershipJpaEntity = membershipRepository.findByName(nameValue)
+                .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + nameValue));
         return membershipJpaEntity;
     }
 
 
     @Override
-    public MembershipJpaEntity modifyMembership(Membership.MembershipId membershipId, Membership.MembershipName membershipName, Membership.MembershipAddress membershipAddress, Membership.MembershipEmail membershipEmail, Membership.MembershipIsValid membershipIsValid, Membership.Friends friends, Membership.WantedFriends wantedFriends, Membership.RefreshToken refreshToken) {
+    public MembershipJpaEntity modifyMembership(Membership.MembershipId membershipId, Membership.MembershipName membershipName,Membership.MembershipAccount membershipAccount, Membership.MembershipPassword membershipPassword, Membership.MembershipAddress membershipAddress, Membership.MembershipEmail membershipEmail, Membership.MembershipIsValid membershipIsValid, Membership.Friends friends, Membership.WantedFriends wantedFriends, Membership.RefreshToken refreshToken, Membership.MembershipRole membershipRole) {
         Long id = Long.parseLong(membershipId.getMembershipId());
         MembershipJpaEntity entity = membershipRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Membership not found for id: " + id));
@@ -101,16 +130,20 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
         entity.setFriends(friends.getFriends());
         entity.setWantedFriends(wantedFriends.getWantedfriends());
         entity.setRefreshToken(refreshToken.getRefreshToken());
+        entity.setRole(membershipRole.getMembershipRole());
         membershipRepository.save(entity);
 
         return new MembershipJpaEntity(
                 membershipName.getNameValue(),
+                membershipAccount.getAccountValue(),
+                membershipPassword.getPasswordValue(),
                 membershipAddress.getAddressValue(),
                 membershipEmail.getEmailValue(),
                 membershipIsValid.isValidValue(),
                 friends.getFriends(),
                 wantedFriends.getWantedfriends(),
-                refreshToken.getRefreshToken()
+                refreshToken.getRefreshToken(),
+                membershipRole.getMembershipRole()
         );
     }
 

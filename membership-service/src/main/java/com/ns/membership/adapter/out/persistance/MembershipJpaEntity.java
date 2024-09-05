@@ -1,12 +1,10 @@
 package com.ns.membership.adapter.out.persistance;
 
-import com.ns.membership.domain.userData;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
 import java.util.Set;
 
 
@@ -22,6 +20,8 @@ public class MembershipJpaEntity {
     private Long membershipId;
 
     private String name;
+    private String account;
+    private String password;
     private String address;
     private String email;
 
@@ -34,15 +34,19 @@ public class MembershipJpaEntity {
     private Set<Long> wantedFriends;
 
     private String refreshToken;
+    private String role;
 
-    public MembershipJpaEntity(String name, String address, String email, boolean isValid, Set<Long> friends, Set<Long> wantedFriends, String refreshToken) {
+    public MembershipJpaEntity(String name, String account, String password, String address, String email, boolean isValid, Set<Long> friends, Set<Long> wantedFriends, String refreshToken, String role) {
         this.name = name;
+        this.account=account;
+        this.password=password;
         this.address = address;
         this.email = email;
         this.isValid = isValid;
         this.friends = friends;
         this.wantedFriends = wantedFriends;
         this.refreshToken = refreshToken;
+        this.role = role;
     }
 
     @Override
@@ -50,12 +54,15 @@ public class MembershipJpaEntity {
         return "MembershipJpaEntity{" +
                 "membershipId=" + membershipId +
                 ", name='" + name + '\'' +
+                ", account='" + account + '\'' +
+                ", password='" + password + '\'' +
                 ", address='" + address + '\'' +
                 ", email='" + email + '\'' +
                 ", isValid=" + isValid +
                 ", friends=" + friends +
                 ", wantedFriends=" + wantedFriends +
                 ", refreshToken='" + refreshToken + '\'' +
+                ", role='" + role + '\'' +
                 '}';
     }
 }

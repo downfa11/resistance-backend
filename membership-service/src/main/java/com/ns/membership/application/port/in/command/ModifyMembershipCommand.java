@@ -23,6 +23,10 @@ public class ModifyMembershipCommand extends SelfValidating<ModifyMembershipComm
     @NotNull
     private final String name;
     @NotNull
+    private final String account;
+    @NotNull
+    private final String password;
+    @NotNull
     private final String email;
     @NotNull
     @NotBlank
@@ -36,9 +40,11 @@ public class ModifyMembershipCommand extends SelfValidating<ModifyMembershipComm
 
     private final String refreshToken;
 
-    public ModifyMembershipCommand(String membershipId, String name, String email, String address, boolean isValid, Set<Long> friends, Set<Long> wantedFriends, String refreshToken) {
+    public ModifyMembershipCommand(String membershipId, String name, String account, String password, String email, String address, boolean isValid, Set<Long> friends, Set<Long> wantedFriends, String refreshToken) {
         this.membershipId = membershipId;
         this.name = name;
+        this.account=account;
+        this.password=password;
         this.email = email;
         this.address = address;
         this.isValid = isValid;

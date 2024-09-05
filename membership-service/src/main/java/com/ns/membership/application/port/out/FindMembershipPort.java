@@ -9,17 +9,26 @@ public interface FindMembershipPort {
             Membership.MembershipId membershipId
     );
 
-    MembershipJpaEntity findMembershipByEmailAndAddress(
-            Membership.MembershipAddress address,
+    MembershipJpaEntity findMembershipByAccountOrEmail(
+            Membership.MembershipAccount account,
             Membership.MembershipEmail email
+    );
+
+    MembershipJpaEntity findMembershipByAccountAndPassword(
+            Membership.MembershipAccount account,
+            Membership.MembershipPassword password
     );
 
     MembershipJpaEntity findMembershipByEmail(
             Membership.MembershipEmail email
     );
 
-    MembershipJpaEntity findMembershipByAddress(
-            Membership.MembershipAddress address
+    MembershipJpaEntity findMembershipByAccount(
+            Membership.MembershipAccount account
+    );
+
+    MembershipJpaEntity findMembershipByName(
+            Membership.MembershipName name
     );
 
 }
