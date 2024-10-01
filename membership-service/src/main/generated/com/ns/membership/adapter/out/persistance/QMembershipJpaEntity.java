@@ -36,6 +36,10 @@ public class QMembershipJpaEntity extends EntityPathBase<MembershipJpaEntity> {
 
     public final StringPath password = createString("password");
 
+    public final StringPath provider = createString("provider");
+
+    public final StringPath providerId = createString("providerId");
+
     public final StringPath refreshToken = createString("refreshToken");
 
     public final StringPath role = createString("role");

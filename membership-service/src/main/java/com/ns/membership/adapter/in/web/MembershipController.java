@@ -67,11 +67,11 @@ public class MembershipController {
         Random random = new Random();
 
         RegisterMembershipCommand command = RegisterMembershipCommand.builder()
-                .name("name:" + random.nextInt(10000))
-                .account("account:" + random.nextInt(10000))
-                .password("password:" + random.nextInt(10000))
-                .address("address:" + random.nextInt(10000))
-                .email("email: " + random.nextInt(10000))
+                .name("name_" + random.nextInt(10000))
+                .account("account" + random.nextInt(10000))
+                .password("password" + random.nextInt(10000))
+                .address("address_" + random.nextInt(10000))
+                .email("email_" + random.nextInt(10000))
                 .isValid(true)
                 .build();
 

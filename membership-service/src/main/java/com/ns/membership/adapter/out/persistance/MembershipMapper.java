@@ -22,7 +22,9 @@ public class MembershipMapper {
                 new Membership.Friends(membershipJpaEntity.getFriends()),
                 new Membership.WantedFriends(membershipJpaEntity.getWantedFriends()),
                 new Membership.RefreshToken(membershipJpaEntity.getRefreshToken()),
-                new Membership.MembershipRole(membershipJpaEntity.getRole())
+                new Membership.MembershipRole(membershipJpaEntity.getRole()),
+                new Membership.MembershipProvider(membershipJpaEntity.getProvider()),
+                new Membership.MembershipProviderId(membershipJpaEntity.getProviderId())
         );
     }
 

@@ -15,5 +15,5 @@ public interface RegisterMembershipPort {
             Membership.Friends friends,
             Membership.WantedFriends wantedFriends,
             Membership.RefreshToken refreshToken,
-            Membership.MembershipRole membershipRole);
+            Membership.MembershipRole membershipRole, Membership.MembershipProvider membershipProvider, Membership.MembershipProviderId membershipProviderId);
 }

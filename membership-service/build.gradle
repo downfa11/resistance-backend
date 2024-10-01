@@ -60,6 +60,10 @@ dependencies {
 
     implementation "com.querydsl:querydsl-core"
     implementation "com.querydsl:querydsl-collections"
+
+
+    // OAuth2-client
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 }
 
 // QueryDSL

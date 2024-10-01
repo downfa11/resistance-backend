@@ -19,10 +19,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.naming.AuthenticationException;
 
 @WebAdapter
 @RestController
@@ -35,16 +42,27 @@ public class AuthMembershipController {
     private final ModifyMembershipUseCase modifyMembershipUseCase;
     private final FindMembershipUseCase findMembershipUseCase;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AuthenticationManager authenticationManager;
 
     @PostMapping(path="/membership/login")
     JWtToken loginMembership(@RequestBody LoginMembershipRequest request){
 
-        LoginMembershipCommand command = LoginMembershipCommand.builder()
-                .account(request.getAccount())
-                .password(request.getPassword())
-                .build();
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getAccount(), request.getPassword())
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        return loginMembershipUseCase.LoginMembership(command);
+            LoginMembershipCommand command = LoginMembershipCommand.builder()
+                    .account(request.getAccount())
+                    .password(request.getPassword())
+                    .build();
+
+            return loginMembershipUseCase.LoginMembership(command);
+        } catch (InternalAuthenticationServiceException e) {
+            log.error("Authentication service exception occurred: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     @PostMapping(path="/membership/refresh-token")
@@ -77,10 +95,10 @@ public class AuthMembershipController {
         return loginMembershipUseCase.getMembershipByJwtToken(command);
     }
 
-    @PostMapping("/membership/register/email-validate")
+    @PostMapping("/membership/register/email-send")
     public ResponseEntity<String> sendRegistrationVerificationEmail(HttpSession httpSession, @RequestParam String email) {
         try {
-            String code = mailSendUseCase.sendSimpleMessage(email);
+            String code = mailSendUseCase.sendRegisterMessage(email);
             httpSession.setAttribute("registerCode", code);
             return ResponseEntity.ok("회원가입을 위한 이메일 인증 메일이 전송되었습니다.");
         } catch (Exception e) {
@@ -89,7 +107,7 @@ public class AuthMembershipController {
         }
     }
 
-    @PostMapping("/password-reset/email-validate")
+    @PostMapping("/membership/password-reset/email-send")
     public ResponseEntity<String> sendPasswordResetVerificationEmail(HttpSession httpSession) {
         String membershipId = String.valueOf(jwtTokenProvider.getMembershipIdbyToken());
 
@@ -109,7 +127,7 @@ public class AuthMembershipController {
         }
 
         try {
-            String code = mailSendUseCase.sendSimpleMessage(email);
+            String code = mailSendUseCase.sendPasswordResetMessage(email);
             httpSession.setAttribute("passwordResetCode", code);
             return ResponseEntity.ok("비밀번호 변경을 위한 이메일 인증 메일이 전송되었습니다.");
         } catch (Exception e) {
@@ -118,7 +136,7 @@ public class AuthMembershipController {
         }
     }
 
-    @PostMapping("/password-reset")
+    @PostMapping("/membership/password-reset")
     public ResponseEntity<String> resetPassword(HttpSession httpSession,
                                                 @RequestBody PasswordResetRequest request) {
         String sessionCode = (String) httpSession.getAttribute("passwordResetCode");
@@ -145,7 +163,9 @@ public class AuthMembershipController {
         ModifyMembershipCommand modifyCommand = ModifyMembershipCommand.builder()
                 .membershipId(membership.getMembershipId())
                 .name(membership.getName())
-                .address(request.getNewAddress()) // todo. 내가 address를 비밀번호로 정했엇나.?;;
+                .account(membership.getAccount())
+                .address(membership.getAddress())
+                .password(request.getNewPassword())
                 .email(membership.getEmail())
                 .isValid(membership.isValid())
                 .build();

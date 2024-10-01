@@ -18,7 +18,7 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
     //private final VaultAdapter vaultAdapter;
 
     @Override
-    public MembershipJpaEntity createMembership(Membership.MembershipName membershipName,Membership.MembershipAccount membershipAccount, Membership.MembershipPassword membershipPassword, Membership.MembershipAddress membershipAddress, Membership.MembershipEmail membershipEmail, Membership.MembershipIsValid membershipIsValid, Membership.Friends friends, Membership.WantedFriends wantedFriends, Membership.RefreshToken refreshToken,Membership.MembershipRole membershipRole) {
+    public MembershipJpaEntity createMembership(Membership.MembershipName membershipName, Membership.MembershipAccount membershipAccount, Membership.MembershipPassword membershipPassword, Membership.MembershipAddress membershipAddress, Membership.MembershipEmail membershipEmail, Membership.MembershipIsValid membershipIsValid, Membership.Friends friends, Membership.WantedFriends wantedFriends, Membership.RefreshToken refreshToken, Membership.MembershipRole membershipRole, Membership.MembershipProvider membershipProvider, Membership.MembershipProviderId membershipProviderId) {
 
         //String encryptedPassword = vaultAdapter.encrypt(membershipPassword.getPassword());
         MembershipJpaEntity jpaEntity = new MembershipJpaEntity(
@@ -30,7 +30,9 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
                 membershipIsValid.isValidValue(),
                 friends.getFriends(),wantedFriends.getWantedfriends(),
                 "",
-                membershipRole.getMembershipRole()
+                membershipRole.getMembershipRole(),
+                membershipProvider.getMembershipProvider(),
+                membershipProviderId.getMembershipProviderId()
 
         );
         membershipRepository.save(jpaEntity);
@@ -45,7 +47,9 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
                 membershipIsValid.isValidValue(),
                 friends.getFriends(),wantedFriends.getWantedfriends(),
                 "",
-                membershipRole.getMembershipRole()
+                membershipRole.getMembershipRole(),
+                membershipProvider.getMembershipProvider(),
+                membershipProviderId.getMembershipProviderId()
         );
     }
 
@@ -67,9 +71,6 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
         String emailValue= email.getEmailValue();
         MembershipJpaEntity membershipJpaEntity = membershipRepository.findByAccountOrEmail(accountValue,emailValue)
                 .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + accountValue+", "+emailValue));
-        String encryptedEmail = membershipJpaEntity.getEmail();
-        //String decrptedEmail = vaultAdapter.decrypt(encryptedEmail);
-        //membershipJpaEntity.setEmail(encryptedEmail);
         return membershipJpaEntity;
     }
 
@@ -80,9 +81,6 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
         String passwordValue= password.getPasswordValue();
         MembershipJpaEntity membershipJpaEntity = membershipRepository.findByAccountAndPassword(accountValue,passwordValue)
                 .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + accountValue+", "+passwordValue));
-        String encryptedEmail = membershipJpaEntity.getEmail();
-        //String decrptedEmail = vaultAdapter.decrypt(encryptedEmail);
-        //membershipJpaEntity.setEmail(encryptedEmail);
         return membershipJpaEntity;
     }
 
@@ -114,7 +112,7 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
 
 
     @Override
-    public MembershipJpaEntity modifyMembership(Membership.MembershipId membershipId, Membership.MembershipName membershipName,Membership.MembershipAccount membershipAccount, Membership.MembershipPassword membershipPassword, Membership.MembershipAddress membershipAddress, Membership.MembershipEmail membershipEmail, Membership.MembershipIsValid membershipIsValid, Membership.Friends friends, Membership.WantedFriends wantedFriends, Membership.RefreshToken refreshToken, Membership.MembershipRole membershipRole) {
+    public MembershipJpaEntity modifyMembership(Membership.MembershipId membershipId, Membership.MembershipName membershipName,Membership.MembershipAccount membershipAccount, Membership.MembershipPassword membershipPassword, Membership.MembershipAddress membershipAddress, Membership.MembershipEmail membershipEmail, Membership.MembershipIsValid membershipIsValid, Membership.Friends friends, Membership.WantedFriends wantedFriends, Membership.RefreshToken refreshToken, Membership.MembershipRole membershipRole, Membership.MembershipProvider membershipProvider, Membership.MembershipProviderId membershipProviderId) {
         Long id = Long.parseLong(membershipId.getMembershipId());
         MembershipJpaEntity entity = membershipRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Membership not found for id: " + id));
@@ -124,8 +122,6 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
         entity.setAddress(membershipAddress.getAddressValue());
         entity.setEmail(membershipEmail.getEmailValue());
         entity.setValid(membershipIsValid.isValidValue());
-
-        //Todo. 여기서 IPC 통신으로 BUSINESS에서 받아온 데이터들을 토대로 userData를 만들어와야한다.
 
         entity.setFriends(friends.getFriends());
         entity.setWantedFriends(wantedFriends.getWantedfriends());
@@ -143,7 +139,9 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
                 friends.getFriends(),
                 wantedFriends.getWantedfriends(),
                 refreshToken.getRefreshToken(),
-                membershipRole.getMembershipRole()
+                membershipRole.getMembershipRole(),
+                membershipProvider.getMembershipProvider(),
+                membershipProviderId.getMembershipProviderId()
         );
     }
 

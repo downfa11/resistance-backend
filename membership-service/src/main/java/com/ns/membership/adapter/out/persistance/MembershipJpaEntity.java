@@ -1,9 +1,7 @@
 package com.ns.membership.adapter.out.persistance;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.Set;
 
@@ -11,6 +9,7 @@ import java.util.Set;
 @Entity
 @Table(name ="membership")
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class MembershipJpaEntity {
@@ -36,7 +35,11 @@ public class MembershipJpaEntity {
     private String refreshToken;
     private String role;
 
-    public MembershipJpaEntity(String name, String account, String password, String address, String email, boolean isValid, Set<Long> friends, Set<Long> wantedFriends, String refreshToken, String role) {
+
+    private String provider;
+    private String providerId;
+
+    public MembershipJpaEntity(String name, String account, String password, String address, String email, boolean isValid, Set<Long> friends, Set<Long> wantedFriends, String refreshToken, String role, String provider, String providerId) {
         this.name = name;
         this.account=account;
         this.password=password;
@@ -47,6 +50,8 @@ public class MembershipJpaEntity {
         this.wantedFriends = wantedFriends;
         this.refreshToken = refreshToken;
         this.role = role;
+        this.provider = provider;
+        this.providerId = providerId;
     }
 
     @Override
@@ -63,6 +68,8 @@ public class MembershipJpaEntity {
                 ", wantedFriends=" + wantedFriends +
                 ", refreshToken='" + refreshToken + '\'' +
                 ", role='" + role + '\'' +
+                ", provider='" + provider + '\'' +
+                ", providerId='" + providerId + '\'' +
                 '}';
     }
 }

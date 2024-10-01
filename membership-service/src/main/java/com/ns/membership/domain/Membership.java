@@ -26,6 +26,9 @@ public class Membership {
     @Getter private final String refreshToken;
     @Getter private final String role;
 
+    @Getter private final String provider;
+    @Getter private final String providerId;
+
 
     public static Membership generateMember(
             MembershipId membershipId,
@@ -38,7 +41,9 @@ public class Membership {
             Friends friends,
             WantedFriends wantedFriends,
             RefreshToken refreshToken,
-            MembershipRole role){
+            MembershipRole role,
+            MembershipProvider membershipProvider,
+            MembershipProviderId membershipProviderId){
 
         return new Membership(
                 membershipId.getMembershipId(),
@@ -51,7 +56,9 @@ public class Membership {
                 friends.getFriends(),
                 wantedFriends.getWantedfriends(),
                 refreshToken.getRefreshToken(),
-                role.getMembershipRole()
+                role.getMembershipRole(),
+                membershipProvider.getMembershipProvider(),
+                membershipProviderId.getMembershipProviderId()
         );
     }
     @Value
@@ -142,9 +149,23 @@ public class Membership {
 
     @Value
     public static class MembershipRole {
-        private String MembershipRole;
+        private String membershipRole;
 
-        public MembershipRole(String membershipRole) { this.MembershipRole=membershipRole; }
+        public MembershipRole(String membershipRole) { this.membershipRole=membershipRole; }
+    }
+
+    @Value
+    public static class MembershipProvider {
+        private String membershipProvider;
+
+        public MembershipProvider(String membershipProvider) { this.membershipProvider=membershipProvider; }
+    }
+
+    @Value
+    public static class MembershipProviderId {
+        private String membershipProviderId;
+
+        public MembershipProviderId(String membershipProviderId) { this.membershipProviderId=membershipProviderId; }
     }
 
 }
