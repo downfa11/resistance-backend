@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PasswordResetRequest {
     private String membershipId;
-    private String newAddress;
+    private String newPassword;
     private String verify;
 }
 
