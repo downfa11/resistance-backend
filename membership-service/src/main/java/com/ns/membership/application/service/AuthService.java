@@ -3,7 +3,6 @@ package com.ns.membership.application.service;
 
 import com.ns.membership.adapter.out.persistance.MembershipJpaEntity;
 import com.ns.membership.adapter.out.persistance.MembershipMapper;
-import com.ns.membership.adapter.out.vault.VaultAdapter;
 import com.ns.membership.application.port.in.LoginMembershipUseCase;
 import com.ns.membership.application.port.in.command.LoginMembershipCommand;
 import com.ns.membership.application.port.in.command.RefreshTokenCommand;
@@ -18,8 +17,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Member;
-
 @RequiredArgsConstructor
 @Service
 @Slf4j
@@ -30,16 +27,14 @@ public class AuthService implements LoginMembershipUseCase {
     private final FindMembershipPort findMembershipPort;
     private final ModifyMembershipPort modifyMembershipPort;
     private final MembershipMapper mapper;
-    private final VaultAdapter vaultAdapter;
     @Override
     public JWtToken LoginMembership(LoginMembershipCommand command) {
 
 
         String account = command.getAccount();
-        String encryptedPassword = vaultAdapter.encrypt(command.getPassword());
         MembershipJpaEntity membershipJpaEntity = findMembershipPort.findMembershipByAccountAndPassword(
                 new Membership.MembershipAccount(account),
-                new Membership.MembershipPassword(encryptedPassword)
+                new Membership.MembershipPassword(command.getPassword())
 
         );
 
@@ -67,7 +62,9 @@ public class AuthService implements LoginMembershipUseCase {
                     new Membership.Friends(membershipJpaEntity.getFriends()),
                     new Membership.WantedFriends(membershipJpaEntity.getWantedFriends()),
                     new Membership.RefreshToken(refreshToken),
-                    new Membership.MembershipRole(membershipJpaEntity.getRole())
+                    new Membership.MembershipRole(membershipJpaEntity.getRole()),
+                            new Membership.MembershipProvider(membershipJpaEntity.getProvider()),
+                    new Membership.MembershipProviderId(membershipJpaEntity.getProviderId())
             );
 
             return JWtToken.generateJwtToken(
