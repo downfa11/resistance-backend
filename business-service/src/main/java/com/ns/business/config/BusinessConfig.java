@@ -1,4 +1,4 @@
-package com.ns.business;
+package com.ns.business.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;

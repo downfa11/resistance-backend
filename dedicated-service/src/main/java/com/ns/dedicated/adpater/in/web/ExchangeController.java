@@ -19,7 +19,6 @@ public class ExchangeController {
 
     @GetMapping("/rates")
     public ExchangeRateResponse getExchangeRates(){
-
         Long memberId = jwtTokenProvider.getMembershipIdbyToken();
 
         if(memberId!=adminId){
@@ -33,10 +32,7 @@ public class ExchangeController {
 
     @GetMapping("init")
     public ExchangeRateResponse initExchangeRates() { exchangeUseCase.initExchangeRates();
-
-
         Long memberId = jwtTokenProvider.getMembershipIdbyToken();
-
 
         if(memberId!=adminId){
             throw new RuntimeException("not allow initExchangeRates - id:"+memberId);
@@ -58,8 +54,6 @@ public class ExchangeController {
 
     @PostMapping("/set/{money}")
     public ExchangeRateResponse setExchangeRates(@PathVariable String money){
-
-
         Long memberId = jwtTokenProvider.getMembershipIdbyToken();
 
         if(memberId!=adminId){

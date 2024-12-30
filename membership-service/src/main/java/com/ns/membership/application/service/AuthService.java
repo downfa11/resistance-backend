@@ -26,46 +26,26 @@ public class AuthService implements LoginMembershipUseCase {
     private final AuthMembershipPort authMembershipPort;
     private final FindMembershipPort findMembershipPort;
     private final ModifyMembershipPort modifyMembershipPort;
+
     private final MembershipMapper mapper;
+
     @Override
     public JWtToken LoginMembership(LoginMembershipCommand command) {
-
-
         String account = command.getAccount();
+
         MembershipJpaEntity membershipJpaEntity = findMembershipPort.findMembershipByAccountAndPassword(
                 new Membership.MembershipAccount(account),
-                new Membership.MembershipPassword(command.getPassword())
-
-        );
+                new Membership.MembershipPassword(command.getPassword())).get();
 
 
         if(membershipJpaEntity.isValid()) {
+            String membershipId = String.valueOf(membershipJpaEntity.getMembershipId());
+            Membership.MembershipId memberId = new Membership.MembershipId(membershipId);
+            Membership.MembershipRole memberRole = new Membership.MembershipRole(membershipJpaEntity.getRole());
 
-            String membershipId = membershipJpaEntity.getMembershipId().toString();
-
-            String jwtToken = authMembershipPort.generateJwtToken(
-                    new Membership.MembershipId(membershipId),
-                    new Membership.MembershipRole(membershipJpaEntity.getRole())
-            );
-            String refreshToken = authMembershipPort.generateRefreshToken(
-                    new Membership.MembershipId(membershipId)
-            );
-
-            modifyMembershipPort.modifyMembership(
-                    new Membership.MembershipId(membershipId),
-                    new Membership.MembershipName(membershipJpaEntity.getName()),
-                    new Membership.MembershipAccount(membershipJpaEntity.getAccount()),
-                    new Membership.MembershipPassword(membershipJpaEntity.getPassword()),
-                    new Membership.MembershipAddress(membershipJpaEntity.getAddress()),
-                    new Membership.MembershipEmail(membershipJpaEntity.getEmail()),
-                    new Membership.MembershipIsValid(membershipJpaEntity.isValid()),
-                    new Membership.Friends(membershipJpaEntity.getFriends()),
-                    new Membership.WantedFriends(membershipJpaEntity.getWantedFriends()),
-                    new Membership.RefreshToken(refreshToken),
-                    new Membership.MembershipRole(membershipJpaEntity.getRole()),
-                            new Membership.MembershipProvider(membershipJpaEntity.getProvider()),
-                    new Membership.MembershipProviderId(membershipJpaEntity.getProviderId())
-            );
+            String jwtToken = authMembershipPort.generateJwtToken(memberId, memberRole);
+            String refreshToken = authMembershipPort.generateRefreshToken(memberId);
+            updateRefreshTokenMembership(membershipJpaEntity, membershipId, refreshToken);
 
             return JWtToken.generateJwtToken(
                     new JWtToken.MembershipId(membershipId),
@@ -74,6 +54,24 @@ public class AuthService implements LoginMembershipUseCase {
             );
         }
         return null;
+    }
+
+    private void updateRefreshTokenMembership(MembershipJpaEntity membershipJpaEntity, String membershipId, String refreshToken){
+        modifyMembershipPort.modifyMembership(
+                new Membership.MembershipId(membershipId),
+                new Membership.MembershipName(membershipJpaEntity.getName()),
+                new Membership.MembershipAccount(membershipJpaEntity.getAccount()),
+                new Membership.MembershipPassword(membershipJpaEntity.getPassword()),
+                new Membership.MembershipAddress(membershipJpaEntity.getAddress()),
+                new Membership.MembershipEmail(membershipJpaEntity.getEmail()),
+                new Membership.MembershipIsValid(membershipJpaEntity.isValid()),
+                new Membership.Friends(membershipJpaEntity.getFriends()),
+                new Membership.WantedFriends(membershipJpaEntity.getWantedFriends()),
+                new Membership.RefreshToken(refreshToken),
+                new Membership.MembershipRole(membershipJpaEntity.getRole()),
+                new Membership.MembershipProvider(membershipJpaEntity.getProvider()),
+                new Membership.MembershipProviderId(membershipJpaEntity.getProviderId())
+        );
     }
 
     @Override
@@ -85,10 +83,9 @@ public class AuthService implements LoginMembershipUseCase {
             Membership.MembershipId membershipId = authMembershipPort.parseMembershipIdFromToken(RequestedRefreshToken);
             String membershipIdString = membershipId.getMembershipId();
 
-            MembershipJpaEntity membershipJpaEntity = findMembershipPort.findMembership(membershipId);
+            MembershipJpaEntity membershipJpaEntity = findMembershipPort.findMembership(membershipId).get();
             if(!membershipJpaEntity.getRefreshToken().equals(command.getRefreshToken()))
                 return null;
-
 
             if(membershipJpaEntity.isValid()){
                 String newJwtToken = authMembershipPort.generateJwtToken(
@@ -122,7 +119,7 @@ public class AuthService implements LoginMembershipUseCase {
         if (isValid) {
             Membership.MembershipId membershipId = authMembershipPort.parseMembershipIdFromToken(jwtToken);
 
-            MembershipJpaEntity membershipJpaEntity = findMembershipPort.findMembership(membershipId);
+            MembershipJpaEntity membershipJpaEntity = findMembershipPort.findMembership(membershipId).get();
             if (!membershipJpaEntity.getRefreshToken().equals(command.getJwtToken())) return null;
 
             return mapper.mapToDomainEntity(membershipJpaEntity);

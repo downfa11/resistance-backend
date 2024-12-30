@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class SubTask {
     private String membersrhipId;
     private String subTaskName;
-    private String taskType; // banking, membership
+    private String taskType;
     private String status; //ready, success, fail
     private Object data;
 }

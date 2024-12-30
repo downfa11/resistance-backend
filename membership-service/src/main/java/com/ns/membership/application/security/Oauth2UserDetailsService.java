@@ -68,7 +68,7 @@ public class Oauth2UserDetailsService extends DefaultOAuth2UserService {
         String role = "ROLE_USER";
 
         MembershipJpaEntity userData = findMembershipPort.findMembershipByAccount(
-                new Membership.MembershipAccount(account));
+                new Membership.MembershipAccount(account)).get();
 
         if (userData == null) {
             System.out.println("로그인이 최초입니다.");

@@ -15,6 +15,7 @@ import com.ns.dedicated.application.port.out.FindBoardPort;
 import com.ns.dedicated.application.port.out.ModifyBoardPort;
 import com.ns.dedicated.application.port.out.RegisterBoardPort;
 import com.ns.dedicated.domain.Board;
+import com.ns.dedicated.domain.CurrencyRate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -32,6 +33,11 @@ import java.util.Map;
 @UseCase
 public class ExchangeService implements ExchangeUseCase {
 
+    private static final String EXCHANGE_KEY = "exchangeRates";
+    private static final String USAGE_KEY = "usage";
+    private static final Double BASE_RATE = 0.95;
+    private static final Double RELATIVE_RATE_FACTOR = 0.1;
+
     private final RedisTemplate<String, String> redisTemplate;
     private final HashOperations<String, String, String> exchangeOperations;
 
@@ -42,51 +48,76 @@ public class ExchangeService implements ExchangeUseCase {
 
     @Override
     public void initExchangeRates() {
-        Map<String, Integer> exchangeData = new HashMap<>();
-        exchangeData.put("JPY", 1090);
-        exchangeData.put("XAG", 27);
-        exchangeData.put("XPT", 1201);
-        exchangeData.put("CNY", 177);
-        exchangeData.put("SPD", 1);
-        exchangeData.put("KRW", 1335);
+        if(redisTemplate.hasKey(EXCHANGE_KEY))
+            return;
 
-        exchangeData.forEach((currency, rate) -> {
-            exchangeOperations.put("exchangeRates", currency, String.valueOf(rate));
-            exchangeOperations.put("usage", currency, "0");
+        CurrencyRate.getDefaultExchangeRates().forEach((currency, rate) -> {
+            exchangeOperations.put(EXCHANGE_KEY, currency, String.valueOf(rate));
+            exchangeOperations.put(USAGE_KEY, currency, "0");
         });
     }
+
 
     @Override
     public Map<String, Integer> getExchangeRates() {
         Map<String, Integer> exchangeData = new HashMap<>();
-        exchangeData.put("JPY", Integer.parseInt(exchangeOperations.get("exchangeRates", "JPY")));
-        exchangeData.put("XAG", Integer.parseInt(exchangeOperations.get("exchangeRates", "XAG")));
-        exchangeData.put("XPT", Integer.parseInt(exchangeOperations.get("exchangeRates", "XPT")));
-        exchangeData.put("CNY", Integer.parseInt(exchangeOperations.get("exchangeRates", "CNY")));
-        exchangeData.put("SPD", Integer.parseInt(exchangeOperations.get("exchangeRates", "SPD")));
-        exchangeData.put("KRW", Integer.parseInt(exchangeOperations.get("exchangeRates", "KRW")));
+
+        CurrencyRate.getDefaultExchangeRates().keySet().forEach(currency -> {
+            String rate = exchangeOperations.get(EXCHANGE_KEY, currency);
+            exchangeData.put(currency, Integer.parseInt(rate));
+        });
+
         return exchangeData;
     }
 
+
     @Override
     public void adjustExchangeRates() {
-        Map<String, Integer> exchangeData = getExchangeRates();
-        double average = calculateAverageExchangeAttempt();
-        exchangeData.forEach((currency, rate) -> {
-            int newRate = rate < average ? (int)(rate * 1.01) : (int)(rate * 0.99);
-            exchangeOperations.put("exchangeRates", currency, String.valueOf(newRate));
+        Map<String, Integer> usageData = getUsageData();
+        int totalUsage = calculateTotalUsage();
+
+        getExchangeRates().forEach((currency, rate) -> {
+            int usage = usageData.getOrDefault(currency, 0);
+            exchangeOperations.put(EXCHANGE_KEY, currency, String.valueOf(calcNewRate(rate,totalUsage, usage)));
         });
+    }
+
+    private double calcNewRate(Integer rate, Integer totalUsage, Integer usage){
+        double relative = 1 - (double) usage / totalUsage;
+        double adjustRate = BASE_RATE + (relative * RELATIVE_RATE_FACTOR);
+
+        return rate * adjustRate;
+    }
+
+    private Map<String, Integer> getUsageData() {
+        Map<String, String> usageDataToString = exchangeOperations.entries(USAGE_KEY);
+        Map<String, Integer> usageDataToInteger = new HashMap<>();
+
+        usageDataToString.forEach((key, value) -> {
+            try {
+                usageDataToInteger.put(key, Integer.parseInt(value));
+            } catch (NumberFormatException e) {
+                usageDataToInteger.put(key, 0);
+            }
+        });
+
+        return usageDataToInteger;
     }
 
     @Override
     public void setExchangeRates(String money) {
         // 해당 재화의 사용량을 1 증가
-        exchangeOperations.increment("usage", money, 1);
+        exchangeOperations.increment(USAGE_KEY, money, 1);
     }
 
-    private double calculateAverageExchangeAttempt() {
-        Map<String, Integer> exchangeData = getExchangeRates();
-        double total = exchangeData.values().stream().mapToDouble(Integer::doubleValue).sum();
-        return total / exchangeData.size();
+    private Integer calculateTotalUsage() {
+        Integer totalUsage = getUsageData().values()
+                .stream()
+                .mapToInt(Integer::intValue)
+                .sum();
+
+        // 분모가 0이 될 수 없어
+        return totalUsage == 0 ? 1 : totalUsage;
     }
+
 }

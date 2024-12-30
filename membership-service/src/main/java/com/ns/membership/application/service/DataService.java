@@ -2,6 +2,7 @@ package com.ns.membership.application.service;
 
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ns.common.CountDownLatchManager;
 import com.ns.common.SubTask;
@@ -29,11 +30,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional
 public class DataService implements UserDataRequestUseCase {
-
+    private static final Integer RANDOM_ALLY_COUNT = 5;
     private final SendTaskPort sendTaskPort;
 
     private final MembershipRepository membershipRepository;
     private final CountDownLatchManager countDownLatchManager;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
 
     @Override
@@ -41,52 +43,16 @@ public class DataService implements UserDataRequestUseCase {
     @Cacheable(value="userData",key="'userData'+':'+ #command.membershipId+':'+ #command.targetIdList")
     public List<userData> getUserData(UserDataRequestCommand command) {
         try {
-
-            List<SubTask> subtasklist = new ArrayList<>();
-
-            for (Long membershipId : command.getTargetIdList()) {
-                SubTask subtask = SubTask.builder()
-                        .subTaskName("GetMemberDataTask : " + "MembershipId validation, transfer UserData.")
-                        .membersrhipId(membershipId.toString())
-                        .taskType("membership")
-                        .status("ready")
-                        .data(membershipId)
-                        .build();
-
-                subtasklist.add(subtask);
-            }
-
-            Task task = Task.builder()
-                    .taskID(UUID.randomUUID().toString())
-                    .taskName("GetUserDatas Task")
-                    .membershipId(command.getMembershipId())
-                    .subTaskList(subtasklist)
-                    .build();
-
+            List<SubTask> subTasks = createSubTaskListGetMemberData(command);
+            Task task = createTaskGetMemberData(command.getMembershipId(), subTasks);
             sendTaskPort.sendTaskPort(task);
+
             countDownLatchManager.addCountDownLatch(task.getTaskID());
-
-
-            countDownLatchManager.getCountDownLatch(task.getTaskID()).await();
+            countDownLatchManager.getCountDownLatch(task.getTaskID())
+                    .await();
 
             String result = countDownLatchManager.getDataForKey(task.getTaskID());
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            Task taskData = objectMapper.readValue(result, Task.class);
-
-            List<userData> userDataList = new ArrayList<>();
-            for (SubTask subTask : taskData.getSubTaskList()) {
-                if (subTask.getStatus().equals("success")) {
-                    try {
-                        userData userData = objectMapper.convertValue(subTask.getData(), userData.class);
-                        userDataList.add(userData);
-                    } catch (IllegalArgumentException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            return userDataList;
+            return convertUserDataList(result);
 
         } catch (Exception e) {
             log.error("Error retrieving user data: ", e);
@@ -94,11 +60,58 @@ public class DataService implements UserDataRequestUseCase {
         }
     }
 
+    private Task createTaskGetMemberData(String membershipId, List<SubTask> subTasks){
+        return Task.builder()
+                .taskID(UUID.randomUUID().toString())
+                .taskName("GetUserDatas Task")
+                .membershipId(membershipId)
+                .subTaskList(subTasks)
+                .build();
+    }
+
+    private List<SubTask> createSubTaskListGetMemberData(UserDataRequestCommand command){
+        List<SubTask> subTasks = new ArrayList<>();
+
+        for (Long membershipId : command.getTargetIdList()) {
+            SubTask subtask = createSubTaskGetMemberData(String.valueOf(membershipId));
+            subTasks.add(subtask);
+        }
+        return subTasks;
+    }
+
+    private SubTask createSubTaskGetMemberData(String membershipId){
+        return SubTask.builder()
+                .subTaskName("GetMemberDataTask : " + "MembershipId validation, transfer UserData.")
+                .membersrhipId(membershipId)
+                .taskType("membership")
+                .status("ready")
+                .data(membershipId)
+                .build();
+    }
+
+    private List<userData> convertUserDataList(String result) throws JsonProcessingException {
+        Task taskData = objectMapper.readValue(result, Task.class);
+
+        List<userData> userDataList = new ArrayList<>();
+        for (SubTask subTask : taskData.getSubTaskList()) {
+            if (subTask.getStatus().equals("success")) {
+                try {
+                    userData userData = objectMapper.convertValue(subTask.getData(), userData.class);
+                    userDataList.add(userData);
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return userDataList;
+    }
+
 
     @Override
     public Set<Long> getAllyRandom(String membershipId) {
-        int count = 5;
-        return membershipRepository.getRandomAlly(membershipId, count).stream()
+        return membershipRepository.getRandomAlly(membershipId, RANDOM_ALLY_COUNT)
+                .stream()
                 .map(entity -> entity.getMembershipId())
                 .collect(Collectors.toSet());
     }

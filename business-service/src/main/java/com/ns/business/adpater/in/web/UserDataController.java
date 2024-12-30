@@ -32,7 +32,36 @@ public class UserDataController {
         if(memberId != request.getUserId())
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-        RegisterUserDataCommand command = RegisterUserDataCommand.builder()
+        RegisterUserDataCommand command = createRegisterUserDataCommand(request);
+        UserData userData = registerUserDataUseCase.registerUserData(command);
+        return ResponseEntity.ok(userData);
+    }
+
+    @PostMapping(path="/update")
+    ResponseEntity<UserData> modifyUserDataByUserId(@RequestBody ModifyUserDataRequest request){
+        Long memberId = jwtTokenProvider.getMembershipIdbyToken();
+
+        if(memberId != request.getUserId())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        ModifyUserDataCommand command = createModifyUserDataCommand(request);
+        UserData userData = modifyUserDataUseCase.modifyUserData(command);
+        return ResponseEntity.ok(userData);
+    }
+
+    @GetMapping(path="/{userId}")
+    ResponseEntity<UserData> findUserDataByUserId(@PathVariable Long userId){
+
+        FindUserDataCommand command = FindUserDataCommand.builder()
+                .userId(userId)
+                .build();
+
+        UserData userData = findUserDataUseCase.findUserData(command);
+        return ResponseEntity.ok(userData);
+    }
+
+    private RegisterUserDataCommand createRegisterUserDataCommand(RegisterUserDataRequest request){
+        return RegisterUserDataCommand.builder()
                 .userId(request.getUserId())
                 .name(request.getName())
                 .gold(request.getGold())
@@ -47,46 +76,22 @@ public class UserDataController {
                 .critical(request.getCritical())
                 .durability(request.getDurability())
                 .build();
-
-        UserData userData = registerUserDataUseCase.registerUserData(command);
-        return ResponseEntity.ok(userData);
     }
 
-    @PostMapping(path="/update")
-    ResponseEntity<UserData> modifyUserDataByUserId(@RequestBody ModifyUserDataRequest request){
-        Long memberId = jwtTokenProvider.getMembershipIdbyToken();
-
-        if(memberId != request.getUserId())
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-
-            ModifyUserDataCommand command = ModifyUserDataCommand.builder()
-                    .userId(request.getUserId())
-                    .gold(request.getGold())
-                    .highscore(request.getHighscore())
-                    .energy(request.getEnergy())
-                    .scenario(request.getScenario())
-                    .head(request.getHead())
-                    .body(request.getBody())
-                    .arm(request.getArm())
-                    .health(request.getHealth())
-                    .attack(request.getAttack())
-                    .critical(request.getCritical())
-                    .durability(request.getDurability())
-                    .build();
-
-
-        UserData userData = modifyUserDataUseCase.modifyUserData(command);
-        return ResponseEntity.ok(userData);
-    }
-
-    @GetMapping(path="/{userId}")
-    ResponseEntity<UserData> findUserDataByUserId(@PathVariable Long userId){
-
-        FindUserDataCommand command = FindUserDataCommand.builder()
-                .userId(userId)
+    private ModifyUserDataCommand createModifyUserDataCommand(ModifyUserDataRequest request){
+        return ModifyUserDataCommand.builder()
+                .userId(request.getUserId())
+                .gold(request.getGold())
+                .highscore(request.getHighscore())
+                .energy(request.getEnergy())
+                .scenario(request.getScenario())
+                .head(request.getHead())
+                .body(request.getBody())
+                .arm(request.getArm())
+                .health(request.getHealth())
+                .attack(request.getAttack())
+                .critical(request.getCritical())
+                .durability(request.getDurability())
                 .build();
-
-        UserData userData = findUserDataUseCase.findUserData(command);
-        return ResponseEntity.ok(userData);
     }
 }

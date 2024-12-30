@@ -3,8 +3,8 @@
 > 20세기 말. 한국 근대사를 재조명해 역사의식을 키우기 위해 텀블벅 후원 준비중인 기능성 게임
 
 
+![resistance](https://github.com/user-attachments/assets/11bce376-1c21-4cb8-8f5f-0f59f4691945)
 
-![main.png](main.png)
 
 사용자 데이터 활용,공지사항 및 텀블벅 후원 상품 제공 등을 위해 웹서버를 구현했습니다.
 
@@ -17,9 +17,7 @@
 Spring MVC, Spring data JPA, Kafka, Redis(Lettuce), Vault, MySQL
 
 <br>
-</br>
 
-![resistance_architecture.png](resistance_architecture.png)
 
 다음과 같이 하위 도메인별로 모듈을 분해했습니다.
 

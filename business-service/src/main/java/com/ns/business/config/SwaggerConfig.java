@@ -1,4 +1,4 @@
-package com.ns.business;
+package com.ns.business.config;
 
 
 import io.swagger.v3.oas.models.OpenAPI;

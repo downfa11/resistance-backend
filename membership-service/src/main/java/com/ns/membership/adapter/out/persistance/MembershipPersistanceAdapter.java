@@ -6,6 +6,7 @@ import com.ns.membership.application.port.out.ModifyMembershipPort;
 import com.ns.membership.application.port.out.RegisterMembershipPort;
 import com.ns.membership.domain.Membership;
 import jakarta.persistence.EntityNotFoundException;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,60 +55,60 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
     }
 
     @Override
-    public MembershipJpaEntity findMembership(Membership.MembershipId membershipId) {
+    public Optional<MembershipJpaEntity> findMembership(Membership.MembershipId membershipId) {
         Long id = Long.parseLong(membershipId.getMembershipId());
         MembershipJpaEntity membershipJpaEntity = membershipRepository.findByMembershipId(id)
                 .orElseThrow(() -> new EntityNotFoundException("Membership not found for id: " + id));
         String encryptedEmail = membershipJpaEntity.getEmail();
         //String decrptedEmail = vaultAdapter.decrypt(encryptedEmail);
         membershipJpaEntity.setEmail(encryptedEmail);
-        return membershipJpaEntity;
+        return Optional.of(membershipJpaEntity);
     }
 
     @Override
-    public MembershipJpaEntity findMembershipByAccountOrEmail(Membership.MembershipAccount account, Membership.MembershipEmail email) {
+    public Optional<MembershipJpaEntity> findMembershipByAccountOrEmail(Membership.MembershipAccount account, Membership.MembershipEmail email) {
 
         String accountValue= account.getAccountValue();
         String emailValue= email.getEmailValue();
         MembershipJpaEntity membershipJpaEntity = membershipRepository.findByAccountOrEmail(accountValue,emailValue)
                 .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + accountValue+", "+emailValue));
-        return membershipJpaEntity;
+        return Optional.of(membershipJpaEntity);
     }
 
     @Override
-    public MembershipJpaEntity findMembershipByAccountAndPassword(Membership.MembershipAccount account, Membership.MembershipPassword password) {
+    public Optional<MembershipJpaEntity> findMembershipByAccountAndPassword(Membership.MembershipAccount account, Membership.MembershipPassword password) {
 
         String accountValue= account.getAccountValue();
         String passwordValue= password.getPasswordValue();
         MembershipJpaEntity membershipJpaEntity = membershipRepository.findByAccountAndPassword(accountValue,passwordValue)
                 .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + accountValue+", "+passwordValue));
-        return membershipJpaEntity;
+        return Optional.of(membershipJpaEntity);
     }
 
     @Override
-    public MembershipJpaEntity findMembershipByEmail(Membership.MembershipEmail email) {
+    public Optional<MembershipJpaEntity> findMembershipByEmail(Membership.MembershipEmail email) {
 
         String emailValue= email.getEmailValue();
         MembershipJpaEntity membershipJpaEntity = membershipRepository.findByEmail(emailValue)
                 .orElseThrow(() -> new EntityNotFoundException("Membership not found for "+emailValue));
-        return membershipJpaEntity;
+        return Optional.of(membershipJpaEntity);
     }
 
     @Override
-    public MembershipJpaEntity findMembershipByAccount(Membership.MembershipAccount account) {
+    public Optional<MembershipJpaEntity> findMembershipByAccount(Membership.MembershipAccount account) {
 
         String accountValue= account.getAccountValue();
         MembershipJpaEntity membershipJpaEntity = membershipRepository.findByAccount(accountValue)
                 .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + accountValue));
-        return membershipJpaEntity;
+        return Optional.of(membershipJpaEntity);
     }
 
     @Override
-    public MembershipJpaEntity findMembershipByName(Membership.MembershipName name) {
+    public Optional<MembershipJpaEntity> findMembershipByName(Membership.MembershipName name) {
         String nameValue= name.getNameValue();
         MembershipJpaEntity membershipJpaEntity = membershipRepository.findByName(nameValue)
                 .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + nameValue));
-        return membershipJpaEntity;
+        return Optional.of(membershipJpaEntity);
     }
 
 

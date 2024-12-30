@@ -78,12 +78,10 @@ public class KakaoService {
     }
 
     private KakaoDTO getUserInfoWithToken(String accessToken) throws Exception {
-        //HttpHeader 생성
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + accessToken);
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
 
-        //HttpHeader 담기
         RestTemplate rt = new RestTemplate();
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(headers);
         ResponseEntity<String> response = rt.exchange(
@@ -94,7 +92,6 @@ public class KakaoService {
         );
 
         log.info("Received json : "+ response.getBody());
-        //Response 데이터 파싱
         JSONParser jsonParser = new JSONParser();
         JSONObject jsonObj    = (JSONObject) jsonParser.parse(response.getBody());
         JSONObject account = (JSONObject) jsonObj.get("kakao_account");

@@ -14,6 +14,7 @@ import java.util.Properties;
 @Component
 public class TaskProducer implements SendTaskPort {
     private final KafkaProducer<String, String> producer;
+    private final ObjectMapper mapper;
     private final String topic;
 
     public TaskProducer(@Value("${kafka.clusters.bootstrapservers}") String bootstrapServers,
@@ -25,21 +26,14 @@ public class TaskProducer implements SendTaskPort {
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
         this.producer = new KafkaProducer<>(props);
+        this.mapper = new ObjectMapper();
         this.topic = topic;
     }
 
     public void sendTask(String key, Task task) {
+        String json = mapTaskToData(task);
+        ProducerRecord<String, String> record = new ProducerRecord<>(topic, key, json);
 
-        //json 형태로 kafka에 produce
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonStringToProduce;
-
-        try {
-            jsonStringToProduce = mapper.writeValueAsString(task);
-        } catch(JsonProcessingException e){
-            throw new RuntimeException(e);
-        }
-        ProducerRecord<String, String> record = new ProducerRecord<>(topic,key,jsonStringToProduce);
         producer.send(record, (metadata, exception) -> {
             if (exception == null) {
                 System.out.println("Message sent successfully. Offset: " + metadata.offset());
@@ -47,6 +41,14 @@ public class TaskProducer implements SendTaskPort {
                 exception.printStackTrace();
             }
         });
+    }
+
+    private String mapTaskToData(Task task){
+        try {
+            return mapper.writeValueAsString(task);
+        } catch(JsonProcessingException e){
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

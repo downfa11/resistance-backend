@@ -31,8 +31,7 @@ public class LoggingProducer {
         ProducerRecord<String, String> record = new ProducerRecord<>(topic, key, value);
         producer.send(record, (metadata, exception) -> {
             if (exception == null) {
-                log.info("Message sent successfully. Topic : " + metadata.topic() + " Offset: " + metadata.offset());
-                log.info(metadata.toString());
+                log.info("Message sent successfully. Topic : " + metadata.topic() + " Offset: " + metadata.offset() + ", data: " + metadata);
             }
              else exception.printStackTrace();
 

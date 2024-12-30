@@ -6,8 +6,5 @@ import com.ns.dedicated.domain.Board;
 
 public interface RegisterBoardPort {
 
-    BoardJpaEntity createBoard(
-            Board.BoardTitle boardTitle,
-            Board.BoardContents boardContents
-    );
+    BoardJpaEntity createBoard(Board.BoardTitle boardTitle, Board.BoardContents boardContents);
 }

@@ -18,7 +18,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String account) throws UsernameNotFoundException {
         MembershipJpaEntity userData = findMembershipPort.findMembershipByAccount(
-                new Membership.MembershipAccount(account));
+                new Membership.MembershipAccount(account)).get();
 
         if (userData != null) {
             return new CustomUserDetails(userData);

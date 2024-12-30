@@ -32,4 +32,76 @@ public class MembershipCustomRepositoryImpl implements MembershipCustomRepositor
 
         return Optional.ofNullable(result);
     }
+
+    @Override
+    public Optional<MembershipJpaEntity> findByAddress(String address) {
+        QMembershipJpaEntity membership = QMembershipJpaEntity.membershipJpaEntity;
+
+        MembershipJpaEntity result = jpaQueryFactory
+                .selectFrom(membership)
+                .where(membership.address.eq(address))
+                .fetchOne();
+
+        return Optional.ofNullable(result);
+    }
+
+    @Override
+    public Optional<MembershipJpaEntity> findByEmail(String email) {
+        QMembershipJpaEntity membership = QMembershipJpaEntity.membershipJpaEntity;
+
+        MembershipJpaEntity result = jpaQueryFactory
+                .selectFrom(membership)
+                .where(membership.email.eq(email))
+                .fetchOne();
+
+        return Optional.ofNullable(result);
+    }
+
+    @Override
+    public Optional<MembershipJpaEntity> findByAccount(String account) {
+        QMembershipJpaEntity membership = QMembershipJpaEntity.membershipJpaEntity;
+
+        MembershipJpaEntity result = jpaQueryFactory
+                .selectFrom(membership)
+                .where(membership.account.eq(account))
+                .fetchOne();
+
+        return Optional.ofNullable(result);
+    }
+
+    @Override
+    public Optional<MembershipJpaEntity> findByName(String name) {
+        QMembershipJpaEntity membership = QMembershipJpaEntity.membershipJpaEntity;
+
+        MembershipJpaEntity result = jpaQueryFactory
+                .selectFrom(membership)
+                .where(membership.name.eq(name))
+                .fetchOne();
+
+        return Optional.ofNullable(result);
+    }
+
+    @Override
+    public Optional<MembershipJpaEntity> findByAccountAndPassword(String account, String password) {
+        QMembershipJpaEntity membership = QMembershipJpaEntity.membershipJpaEntity;
+
+        MembershipJpaEntity result = jpaQueryFactory
+                .selectFrom(membership)
+                .where(membership.account.eq(account).and(membership.password.eq(password)))
+                .fetchOne();
+
+        return Optional.ofNullable(result);
+    }
+
+    @Override
+    public Optional<MembershipJpaEntity> findByAccountOrEmail(String account, String email) {
+        QMembershipJpaEntity membership = QMembershipJpaEntity.membershipJpaEntity;
+        MembershipJpaEntity result = jpaQueryFactory
+                .selectFrom(membership)
+                .where(membership.account.eq(account).or(membership.email.eq(email)))
+                .fetchOne();
+
+        return Optional.ofNullable(result);
+    }
+
 }
