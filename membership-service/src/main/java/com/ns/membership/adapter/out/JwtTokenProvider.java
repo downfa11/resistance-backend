@@ -40,13 +40,15 @@ public class JwtTokenProvider implements AuthMembershipPort {
                 .parseClaimsJws(token)
                 .getBody();
 
+        System.out.println("claims: "+claims);
+
         String membershipIdString = claims.get("sub", String.class);
         Long membershipId = Long.parseLong(membershipIdString);
         return membershipId;
     }
 
     @Override
-    public String generateJwtToken(Membership.MembershipId membershipId) {
+    public String generateJwtToken(Membership.MembershipId membershipId, Membership.MembershipRole membershipRole) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
@@ -54,6 +56,7 @@ public class JwtTokenProvider implements AuthMembershipPort {
                 .setSubject(membershipId.getMembershipId())
                 .setHeaderParam("type", "jwt")
                 .claim("id", membershipId.getMembershipId())
+                .claim("role",membershipRole.getMembershipRole())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(SignatureAlgorithm.HS256, jwtSecret)
@@ -78,16 +81,14 @@ public class JwtTokenProvider implements AuthMembershipPort {
 
     public boolean validateJwtToken(String token) {
         try {
-            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(jwtSecret).build().parseClaimsJws(token);
             return true;
-        } catch (MalformedJwtException ex) {
+        } catch (MalformedJwtException | ExpiredJwtException | UnsupportedJwtException | IllegalArgumentException ex) {
             // Invalid JWT token: 유효하지 않은 JWT 토큰일 때 발생하는 예외
-        } catch (ExpiredJwtException ex) {
             // Expired JWT token: 토큰의 유효기간이 만료된 경우 발생하는 예외
-        } catch (UnsupportedJwtException ex) {
             // Unsupported JWT token: 지원하지 않는 JWT 토큰일 때 발생하는 예외
-        } catch (IllegalArgumentException ex) {
             // JWT claims string is empty: JWT 토큰이 비어있을 때 발생하는 예외
+            System.out.println("[ERROR] jwtToken error : "+ex);
         }
         return false;
     }
@@ -96,4 +97,35 @@ public class JwtTokenProvider implements AuthMembershipPort {
         Claims claims = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody();
         return new Membership.MembershipId(claims.getSubject());
     }
+
+    public String getMembershipRolebyToken(String token) {
+        if (token == null || token.length() == 0) {
+            throw new RuntimeException("JwtToken is Invalid.");
+        }
+
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(jwtSecret)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("role", String.class);
+    }
+
+    public Long getMembershipIdbyToken(String token) {
+        if(token == null || token.length() == 0){
+            throw new RuntimeException("JwtToken is Invalid.");
+        }
+
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(jwtSecret)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        String membershipIdString = claims.get("sub", String.class);
+        Long membershipId = Long.parseLong(membershipIdString);
+        return membershipId;
+    }
+
 }

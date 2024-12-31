@@ -14,12 +14,17 @@ public class MembershipMapper {
         return Membership.generateMember(
                 new Membership.MembershipId(membershipJpaEntity.getMembershipId()+""),
                 new Membership.MembershipName(membershipJpaEntity.getName()),
+                new Membership.MembershipAccount(membershipJpaEntity.getAccount()),
+                new Membership.MembershipPassword(membershipJpaEntity.getPassword()),
                 new Membership.MembershipAddress(membershipJpaEntity.getAddress()),
                 new Membership.MembershipEmail(membershipJpaEntity.getEmail()),
                 new Membership.MembershipIsValid(membershipJpaEntity.isValid()),
                 new Membership.Friends(membershipJpaEntity.getFriends()),
                 new Membership.WantedFriends(membershipJpaEntity.getWantedFriends()),
-                new Membership.RefreshToken(membershipJpaEntity.getRefreshToken())
+                new Membership.RefreshToken(membershipJpaEntity.getRefreshToken()),
+                new Membership.MembershipRole(membershipJpaEntity.getRole()),
+                new Membership.MembershipProvider(membershipJpaEntity.getProvider()),
+                new Membership.MembershipProviderId(membershipJpaEntity.getProviderId())
         );
     }
 

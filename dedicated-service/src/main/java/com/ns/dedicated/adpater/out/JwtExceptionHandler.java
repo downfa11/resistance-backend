@@ -1,4 +1,4 @@
-package com.ns.dedicated;
+package com.ns.dedicated.adpater.out;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.http.HttpStatus;

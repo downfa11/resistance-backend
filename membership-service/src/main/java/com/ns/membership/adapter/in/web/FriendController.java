@@ -36,7 +36,6 @@ public class FriendController {
 
     @GetMapping("/{membershipId}")
     ResponseEntity<userDataCommands> GetFriendList(@PathVariable String membershipId){
-        //Todo 친구 목록을 표시합니다.
         String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
 
         if(memberId != membershipId)
@@ -78,7 +77,6 @@ public class FriendController {
 
     @GetMapping("/wanted/{membershipId}")
     ResponseEntity<userDataCommands> GetWantedFriendList(@PathVariable String membershipId){
-        //Todo 친구신청 목록을 표시합니다.
         String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
 
         if(memberId != membershipId)
@@ -119,7 +117,6 @@ public class FriendController {
 
     @PostMapping("/wanted/add")
     ResponseEntity<Membership> PostSendWantFriend(@RequestBody FriendRequest request){
-        //Todo 친구 신청합니다.
         String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
 
         if(memberId != request.getMembershipId().toString())
@@ -172,7 +169,6 @@ public class FriendController {
 
     @PostMapping("/add")
     ResponseEntity<Membership> PostSendFriendAgree(@RequestBody FriendRequest request){
-        //Todo 친구 신청을 수락합니다.
 
         String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
 
@@ -236,7 +232,6 @@ public class FriendController {
 
     @PostMapping("/delete")
     ResponseEntity<Membership> PostDeleteFriend(@RequestBody FriendRequest request){
-        //Todo 친구를 삭제합니다.
 
         String memberId = jwtTokenProvider.getMembershipIdbyToken().toString();
 

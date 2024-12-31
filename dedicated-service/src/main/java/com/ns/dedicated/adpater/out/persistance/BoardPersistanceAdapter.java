@@ -33,35 +33,25 @@ public class BoardPersistanceAdapter implements RegisterBoardPort, FindBoardPort
 
     @Override
     public BoardJpaEntity createBoard(Board.BoardTitle boardTitle, Board.BoardContents boardContents) {
-
         if (boardContents == null || boardContents.getValue().equals(""))
             return null;
         if (boardTitle == null || boardTitle.getValue().equals(""))
             return null;
 
-        BoardJpaEntity jpaEntity = new BoardJpaEntity(
-                boardTitle.getValue(),
-                boardContents.getValue(),
-                0L,
-                new Timestamp(System.currentTimeMillis()),
-                new Timestamp(System.currentTimeMillis())
-        );
+        BoardJpaEntity jpaEntity = createBoardJpaEntity(boardTitle.getValue(), boardContents.getValue());
         boardRepository.save(jpaEntity);
 
-        return new BoardJpaEntity(
-                jpaEntity.getBoardId(),
-                boardTitle.getValue(),
-                boardContents.getValue(),
-                jpaEntity.getHits(),
-                jpaEntity.getCreatedAt(),
-                jpaEntity.getUpdatedAt()
-        );
+        return jpaEntity;
+    }
+
+    private BoardJpaEntity createBoardJpaEntity(String title, String contents){
+        Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+        return new BoardJpaEntity(title, contents, 0L, currentTime, currentTime);
     }
 
     @Override
     @Transactional
     public BoardJpaEntity modifyBoard(Board.BoardId boardId, Board.BoardTitle boardTitle, Board.BoardContents boardContents) {
-
         if (boardContents == null || boardContents.getValue().equals(""))
             return null;
         if (boardTitle == null || boardTitle.getValue().equals(""))
@@ -73,15 +63,7 @@ public class BoardPersistanceAdapter implements RegisterBoardPort, FindBoardPort
         jpaEntity.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         boardRepository.save(jpaEntity);
 
-
-        return new BoardJpaEntity(
-                jpaEntity.getBoardId(),
-                boardTitle.getValue(),
-                boardContents.getValue(),
-                jpaEntity.getHits(),
-                jpaEntity.getCreatedAt(),
-                jpaEntity.getUpdatedAt()
-        );
+        return jpaEntity;
     }
 
 
@@ -100,7 +82,7 @@ public class BoardPersistanceAdapter implements RegisterBoardPort, FindBoardPort
     public BoardJpaEntity findBoard(Board.BoardId boardId) {
         BoardJpaEntity findBoard = boardRepository.getById(boardId.getValue());
         if (findBoard!=null) {
-            findBoard.setHits(findBoard.getHits() + 1); // 조회수 증가
+            findBoard.setHits(findBoard.getHits() + 1);
             boardRepository.save(findBoard);
         }
         else throw new RuntimeException("boards is not exist.");
@@ -130,7 +112,7 @@ public class BoardPersistanceAdapter implements RegisterBoardPort, FindBoardPort
 
     @Override
     public BoardJpaEntity findTopByOrderByCreatedAtDesc() {
-        Optional<BoardJpaEntity> boardOptional = boardRepository.findTopByOrderByCreatedAtDesc();
+        Optional<BoardJpaEntity> boardOptional = boardRepository.findLatestBoard();
         return boardOptional.get();
     }
 

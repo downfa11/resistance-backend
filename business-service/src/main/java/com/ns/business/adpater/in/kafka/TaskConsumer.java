@@ -56,36 +56,40 @@ public class TaskConsumer {
         consumer.subscribe(Collections.singletonList(topic));
         Thread consumerThread = new Thread(() -> {
             try {
-                while (true) {
-                    ObjectMapper mapper = new ObjectMapper();
-                    ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(1));
-                    for (ConsumerRecord<String, String> record : records) {
-                        System.out.println("Received message: " + record.value());
-
-                        try {
-                            Task tasks = mapper.readValue(record.value(), Task.class);
-                            List<SubTask> subTaskList = tasks.getSubTaskList();
-
-                            for (SubTask subTask : subTaskList) {
-                               if(subTask.getTaskType().equals("membership"))
-                                   subTask = getUserDataByMembershipId(subTask);
-
-                               else if(subTask.getTaskType().equals("register"))
-                                   subTask = Register(subTask);
-                            }
-
-                            this.taskResultProducer.sendTaskResult(tasks.getTaskID(), tasks);
-
-                        } catch (JsonProcessingException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }
+                processConsumerThread();
             } finally {
                 consumer.close();
             }
         });
         consumerThread.start();
+    }
+
+    private void processConsumerThread(){
+        while (true) {
+            ObjectMapper mapper = new ObjectMapper();
+            ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(1));
+            for (ConsumerRecord<String, String> record : records) {
+                System.out.println("Received message: " + record.value());
+
+                try {
+                    Task tasks = mapper.readValue(record.value(), Task.class);
+                    List<SubTask> subTaskList = tasks.getSubTaskList();
+
+                    for (SubTask subTask : subTaskList) {
+                        if(subTask.getTaskType().equals("membership"))
+                            subTask = getUserDataByMembershipId(subTask);
+
+                        else if(subTask.getTaskType().equals("register"))
+                            subTask = Register(subTask);
+                    }
+
+                    this.taskResultProducer.sendTaskResult(tasks.getTaskID(), tasks);
+
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 
     private SubTask getUserDataByMembershipId(SubTask subTask){
@@ -113,25 +117,11 @@ public class TaskConsumer {
         Long membershipId = Long.parseLong(subTask.getMembersrhipId());
         String membershipName = (String) subTask.getData();
         try {
-            UserDataJpaEntity jpaEntity = registerUserDataPort.createUserData(
-                    new UserData.UserId(membershipId),
-                    new UserData.UserName(membershipName),
-                    new UserData.UserGold(0),
-                    new UserData.UserHighscore(0),
-                    new UserData.UserEnergy(0),
-                    new UserData.UserScenario(0),
-                    new UserData.UserHead("0"),
-                    new UserData.UserBody("0"),
-                    new UserData.UserArm("0"),
-                    new UserData.UserHealth(100),
-                    new UserData.UserAttack(15),
-                    new UserData.UserCritical(3),
-                    new UserData.UserDurability(10)
-            );
-
+            UserDataJpaEntity jpaEntity = createUserDataEntity(membershipId, membershipName);
             log.info(jpaEntity.getUserId()+"번 데이터인 "+membershipId+" 사용자를 생성했습니다.");
-            if(jpaEntity!=null)
-                subTask.setStatus("success");
+
+            String status = jpaEntity!=null ? "success" : "fail";
+            subTask.setStatus(status);
 
         } catch(RuntimeException e){
             log.error("Error processing subatsk : "+e.getMessage());
@@ -140,5 +130,22 @@ public class TaskConsumer {
         }
 
         return subTask;
+    }
+
+    private UserDataJpaEntity createUserDataEntity(Long membershipId, String membershipName){
+        return registerUserDataPort.createUserData(
+                new UserData.UserId(membershipId),
+                new UserData.UserName(membershipName),
+                new UserData.UserGold(0),
+                new UserData.UserHighscore(0),
+                new UserData.UserEnergy(0),
+                new UserData.UserScenario(0),
+                new UserData.UserHead("0"),
+                new UserData.UserBody("0"),
+                new UserData.UserArm("0"),
+                new UserData.UserHealth(100),
+                new UserData.UserAttack(15),
+                new UserData.UserCritical(3),
+                new UserData.UserDurability(10));
     }
 }

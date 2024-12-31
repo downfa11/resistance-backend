@@ -7,10 +7,15 @@ public interface RegisterMembershipPort {
 
     MembershipJpaEntity createMembership(
             Membership.MembershipName membershipName,
+            Membership.MembershipAccount membershipAccount,
+            Membership.MembershipPassword membershipPassword,
             Membership.MembershipAddress membershipAddress,
             Membership.MembershipEmail membershipEmail,
             Membership.MembershipIsValid membershipIsValid,
             Membership.Friends friends,
             Membership.WantedFriends wantedFriends,
-            Membership.RefreshToken refreshToken);
+            Membership.RefreshToken refreshToken,
+            Membership.MembershipRole membershipRole,
+            Membership.MembershipProvider membershipProvider,
+            Membership.MembershipProviderId membershipProviderId);
 }

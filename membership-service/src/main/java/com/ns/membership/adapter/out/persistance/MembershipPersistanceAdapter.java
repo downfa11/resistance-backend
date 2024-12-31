@@ -6,6 +6,7 @@ import com.ns.membership.application.port.out.ModifyMembershipPort;
 import com.ns.membership.application.port.out.RegisterMembershipPort;
 import com.ns.membership.domain.Membership;
 import jakarta.persistence.EntityNotFoundException;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,74 +19,101 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
     //private final VaultAdapter vaultAdapter;
 
     @Override
-    public MembershipJpaEntity createMembership(Membership.MembershipName membershipName, Membership.MembershipAddress membershipAddress, Membership.MembershipEmail membershipEmail, Membership.MembershipIsValid membershipIsValid, Membership.Friends friends, Membership.WantedFriends wantedFriends, Membership.RefreshToken refreshToken) {
+    public MembershipJpaEntity createMembership(Membership.MembershipName membershipName, Membership.MembershipAccount membershipAccount, Membership.MembershipPassword membershipPassword, Membership.MembershipAddress membershipAddress, Membership.MembershipEmail membershipEmail, Membership.MembershipIsValid membershipIsValid, Membership.Friends friends, Membership.WantedFriends wantedFriends, Membership.RefreshToken refreshToken, Membership.MembershipRole membershipRole, Membership.MembershipProvider membershipProvider, Membership.MembershipProviderId membershipProviderId) {
 
-        //String encryptedEmail = vaultAdapter.encrypt(membershipEmail.getEmailValue());
+        //String encryptedPassword = vaultAdapter.encrypt(membershipPassword.getPassword());
         MembershipJpaEntity jpaEntity = new MembershipJpaEntity(
                 membershipName.getNameValue(),
+                membershipAccount.getAccountValue(),
+                membershipPassword.getPasswordValue(),
                 membershipAddress.getAddressValue(),
                 membershipEmail.getEmailValue(),
                 membershipIsValid.isValidValue(),
-                friends.getFriends(),wantedFriends.getWantedfriends(),""
+                friends.getFriends(),wantedFriends.getWantedfriends(),
+                "",
+                membershipRole.getMembershipRole(),
+                membershipProvider.getMembershipProvider(),
+                membershipProviderId.getMembershipProviderId()
 
         );
         membershipRepository.save(jpaEntity);
-        log.info("entity encrypted Email : "+jpaEntity.getEmail());
+        log.info("entity encrypted password : "+jpaEntity.getPassword());
         return new MembershipJpaEntity(
                 jpaEntity.getMembershipId(),
                 membershipName.getNameValue(),
+                membershipAccount.getAccountValue(),
+                membershipPassword.getPasswordValue(),
                 membershipAddress.getAddressValue(),
                 membershipEmail.getEmailValue(),
                 membershipIsValid.isValidValue(),
-                friends.getFriends(),wantedFriends.getWantedfriends(),""
+                friends.getFriends(),wantedFriends.getWantedfriends(),
+                "",
+                membershipRole.getMembershipRole(),
+                membershipProvider.getMembershipProvider(),
+                membershipProviderId.getMembershipProviderId()
         );
     }
 
     @Override
-    public MembershipJpaEntity findMembership(Membership.MembershipId membershipId) {
+    public Optional<MembershipJpaEntity> findMembership(Membership.MembershipId membershipId) {
         Long id = Long.parseLong(membershipId.getMembershipId());
-        MembershipJpaEntity membershipJpaEntity = membershipRepository.findById(id)
+        MembershipJpaEntity membershipJpaEntity = membershipRepository.findByMembershipId(id)
                 .orElseThrow(() -> new EntityNotFoundException("Membership not found for id: " + id));
         String encryptedEmail = membershipJpaEntity.getEmail();
         //String decrptedEmail = vaultAdapter.decrypt(encryptedEmail);
         membershipJpaEntity.setEmail(encryptedEmail);
-        return membershipJpaEntity;
+        return Optional.of(membershipJpaEntity);
     }
 
     @Override
-    public MembershipJpaEntity findMembershipByEmailAndAddress(Membership.MembershipAddress address, Membership.MembershipEmail email) {
+    public Optional<MembershipJpaEntity> findMembershipByAccountOrEmail(Membership.MembershipAccount account, Membership.MembershipEmail email) {
 
-        String addressValue= address.getAddressValue();
+        String accountValue= account.getAccountValue();
         String emailValue= email.getEmailValue();
-        MembershipJpaEntity membershipJpaEntity = membershipRepository.findByAddressAndEmail(addressValue,emailValue)
-                .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + addressValue+", "+emailValue));
-        String encryptedEmail = membershipJpaEntity.getEmail();
-        //String decrptedEmail = vaultAdapter.decrypt(encryptedEmail);
-        //membershipJpaEntity.setEmail(encryptedEmail);
-        return membershipJpaEntity;
+        MembershipJpaEntity membershipJpaEntity = membershipRepository.findByAccountOrEmail(accountValue,emailValue)
+                .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + accountValue+", "+emailValue));
+        return Optional.of(membershipJpaEntity);
     }
 
     @Override
-    public MembershipJpaEntity findMembershipByEmail(Membership.MembershipEmail email) {
+    public Optional<MembershipJpaEntity> findMembershipByAccountAndPassword(Membership.MembershipAccount account, Membership.MembershipPassword password) {
+
+        String accountValue= account.getAccountValue();
+        String passwordValue= password.getPasswordValue();
+        MembershipJpaEntity membershipJpaEntity = membershipRepository.findByAccountAndPassword(accountValue,passwordValue)
+                .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + accountValue+", "+passwordValue));
+        return Optional.of(membershipJpaEntity);
+    }
+
+    @Override
+    public Optional<MembershipJpaEntity> findMembershipByEmail(Membership.MembershipEmail email) {
 
         String emailValue= email.getEmailValue();
         MembershipJpaEntity membershipJpaEntity = membershipRepository.findByEmail(emailValue)
                 .orElseThrow(() -> new EntityNotFoundException("Membership not found for "+emailValue));
-        return membershipJpaEntity;
+        return Optional.of(membershipJpaEntity);
     }
 
     @Override
-    public MembershipJpaEntity findMembershipByAddress(Membership.MembershipAddress address) {
+    public Optional<MembershipJpaEntity> findMembershipByAccount(Membership.MembershipAccount account) {
 
-        String addressValue= address.getAddressValue();
-        MembershipJpaEntity membershipJpaEntity = membershipRepository.findByAddress(addressValue)
-                .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + addressValue));
-        return membershipJpaEntity;
+        String accountValue= account.getAccountValue();
+        MembershipJpaEntity membershipJpaEntity = membershipRepository.findByAccount(accountValue)
+                .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + accountValue));
+        return Optional.of(membershipJpaEntity);
+    }
+
+    @Override
+    public Optional<MembershipJpaEntity> findMembershipByName(Membership.MembershipName name) {
+        String nameValue= name.getNameValue();
+        MembershipJpaEntity membershipJpaEntity = membershipRepository.findByName(nameValue)
+                .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + nameValue));
+        return Optional.of(membershipJpaEntity);
     }
 
 
     @Override
-    public MembershipJpaEntity modifyMembership(Membership.MembershipId membershipId, Membership.MembershipName membershipName, Membership.MembershipAddress membershipAddress, Membership.MembershipEmail membershipEmail, Membership.MembershipIsValid membershipIsValid, Membership.Friends friends, Membership.WantedFriends wantedFriends, Membership.RefreshToken refreshToken) {
+    public MembershipJpaEntity modifyMembership(Membership.MembershipId membershipId, Membership.MembershipName membershipName,Membership.MembershipAccount membershipAccount, Membership.MembershipPassword membershipPassword, Membership.MembershipAddress membershipAddress, Membership.MembershipEmail membershipEmail, Membership.MembershipIsValid membershipIsValid, Membership.Friends friends, Membership.WantedFriends wantedFriends, Membership.RefreshToken refreshToken, Membership.MembershipRole membershipRole, Membership.MembershipProvider membershipProvider, Membership.MembershipProviderId membershipProviderId) {
         Long id = Long.parseLong(membershipId.getMembershipId());
         MembershipJpaEntity entity = membershipRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Membership not found for id: " + id));
@@ -96,21 +124,25 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
         entity.setEmail(membershipEmail.getEmailValue());
         entity.setValid(membershipIsValid.isValidValue());
 
-        //Todo. 여기서 IPC 통신으로 BUSINESS에서 받아온 데이터들을 토대로 userData를 만들어와야한다.
-
         entity.setFriends(friends.getFriends());
         entity.setWantedFriends(wantedFriends.getWantedfriends());
         entity.setRefreshToken(refreshToken.getRefreshToken());
+        entity.setRole(membershipRole.getMembershipRole());
         membershipRepository.save(entity);
 
         return new MembershipJpaEntity(
                 membershipName.getNameValue(),
+                membershipAccount.getAccountValue(),
+                membershipPassword.getPasswordValue(),
                 membershipAddress.getAddressValue(),
                 membershipEmail.getEmailValue(),
                 membershipIsValid.isValidValue(),
                 friends.getFriends(),
                 wantedFriends.getWantedfriends(),
-                refreshToken.getRefreshToken()
+                refreshToken.getRefreshToken(),
+                membershipRole.getMembershipRole(),
+                membershipProvider.getMembershipProvider(),
+                membershipProviderId.getMembershipProviderId()
         );
     }
 

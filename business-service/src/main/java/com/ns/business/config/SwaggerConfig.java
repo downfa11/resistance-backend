@@ -1,4 +1,4 @@
-package com.ns.dedicated;
+package com.ns.business.config;
 
 
 import io.swagger.v3.oas.models.OpenAPI;
@@ -12,7 +12,7 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI openAPI() {
         Info info = new Info()
-                .title("dedicated-proejct")
+                .title("business-proejct")
                 .description("hello world")
                 .version("1.0.0");
 

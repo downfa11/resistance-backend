@@ -8,13 +8,9 @@ import java.util.List;
 
 public interface FindBoardPort {
 
-    BoardJpaEntity findBoard(
-            Board.BoardId boardId
-    );
+    BoardJpaEntity findBoard(Board.BoardId boardId);
 
-    List<BoardJpaEntity> findBoardsAll(
-            Long offset
-    );
+    List<BoardJpaEntity> findBoardsAll(Long offset);
 
     BoardJpaEntity findTopByOrderByCreatedAtDesc();
 }

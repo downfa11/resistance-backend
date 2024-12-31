@@ -1,4 +1,4 @@
-package com.ns.dedicated.application.port.out;
+package com.ns.business.application.port.out;
 
 import com.ns.common.Task;
 

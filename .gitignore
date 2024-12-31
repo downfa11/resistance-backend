@@ -249,3 +249,5 @@ db/data/resistance/membership_jpa_entity_friends.ibd
 db/data/resistance/membership_jpa_entity_wanted_friends.ibd
 db/data/binlog.000027
 db/data/binlog.000028
+db/data/\#innodb_redo/\#ib_redo11
+db/data/\#innodb_redo/\#ib_redo42_tmp

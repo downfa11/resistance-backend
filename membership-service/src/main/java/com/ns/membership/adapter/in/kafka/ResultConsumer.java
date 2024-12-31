@@ -46,6 +46,7 @@ public class ResultConsumer {
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         this.consumer = new KafkaConsumer<>(props);
         consumer.subscribe(Collections.singletonList(topic));
+
         log.info("current membership Pod's consumer-group : "+groupId);
 
         Thread consumerThread = new Thread(() -> {
@@ -53,15 +54,7 @@ public class ResultConsumer {
                 while (true) {
                     ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(1));
                     for (ConsumerRecord<String, String> record : records) {
-
-                        try{
-                            processRecord(record);
-
-                        }
-                        catch(Exception e){
-                            log.error("Error proessing record: "+record.value(),e);
-                        }
-
+                        processRecord(record);
                     }
                 }
             } finally {
@@ -74,24 +67,13 @@ public class ResultConsumer {
     private void processRecord(ConsumerRecord<String, String> record) {
         log.info("Received message: " + record.value());
 
-        Task task;
-        try {
-            task = mapper.readValue(record.value(), Task.class);
-        } catch (JsonProcessingException e) {
-            log.error("Error parsing JSON for task: " + record.value(), e);
+        Task task = mapRecordToTask(record.value());
+        String data = mapTaskToData(task);
+
+        if(data==null)
             return;
-        }
 
-        boolean taskResult = task.getSubTaskList().stream().allMatch(subTask -> "success".equals(subTask.getStatus()));
-
-        try {
-            String json = mapper.writeValueAsString(task);
-            countDownLatchManager.setDataForKey(task.getTaskID(), json);
-        } catch (Exception e) {
-            log.error("Error setting data for task : "+task.getTaskID(),e);
-        }
-
-        loggingProducer.sendMessage(task.getTaskID(), taskResult ? "task success" : "task failed");
+        countDownLatchManager.setDataForKey(task.getTaskID(), data);
 
         CountDownLatch latch = countDownLatchManager.getCountDownLatch(task.getTaskID());
         if (latch != null) {
@@ -100,4 +82,22 @@ public class ResultConsumer {
             log.warn("CountDownLatch is null for task ID: {}", task.getTaskID());
         }
     }
+
+    private Task mapRecordToTask(String value){
+        try {
+            return mapper.readValue(value, Task.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error parsing JSON for task: " + value, e);
+        }
+    }
+
+    private String mapTaskToData(Task task){
+        try {
+            return mapper.writeValueAsString(task);
+        } catch (Exception e) {
+            throw new RuntimeException("Error setting data for task : "+task.getTaskID(),e);
+        }
+    }
+
+
 }

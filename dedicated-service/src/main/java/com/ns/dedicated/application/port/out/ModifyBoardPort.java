@@ -6,8 +6,5 @@ import com.ns.dedicated.domain.Board;
 
 public interface ModifyBoardPort {
 
-    BoardJpaEntity modifyBoard(
-            Board.BoardId boardId,
-            Board.BoardTitle boardTitle,
-            Board.BoardContents boardContents);
+    BoardJpaEntity modifyBoard(Board.BoardId boardId, Board.BoardTitle boardTitle, Board.BoardContents boardContents);
 }
