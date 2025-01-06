@@ -2,6 +2,7 @@ package com.ns.business.adpater.out.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Properties;
 
+@Slf4j
 @Component
 public class TaskResultProducer {
     private final KafkaProducer<String, String> producer;
@@ -39,7 +41,7 @@ public class TaskResultProducer {
         ProducerRecord<String, String> record = new ProducerRecord<>(topic, key, jsonStringToProduce);
         producer.send(record, (metadata, exception) -> {
             if (exception == null) {
-                System.out.println("Message sent successfully. Offset: " + metadata.offset());
+                log.info("Message sent successfully. Offset: " + metadata.offset());
             } else {
                 exception.printStackTrace();
             }

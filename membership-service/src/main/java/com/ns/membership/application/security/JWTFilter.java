@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,6 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
 
@@ -24,16 +26,16 @@ public class JWTFilter extends OncePerRequestFilter {
 
         String authorization= request.getHeader("Authorization");
         if (authorization == null || !authorization.startsWith("Bearer ")) {
-            System.out.println("URL Request : "+request.getRequestURI());
+            log.info("URL Request : "+request.getRequestURI());
             filterChain.doFilter(request, response);
             return;
         }
 
-        System.out.println("authorization now");
+        log.info("authorization now");
         String token = authorization.split(" ")[1];
 
         if (!jwtTokenProvider.validateJwtToken(token)) {
-            System.out.println("token expired");
+            log.info("token expired");
             filterChain.doFilter(request, response);
             return;
         }
@@ -53,7 +55,7 @@ public class JWTFilter extends OncePerRequestFilter {
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
         //세션에 사용자 등록
         SecurityContextHolder.getContext().setAuthentication(authToken);
-        System.out.println("SecurityContext Authentication : "+SecurityContextHolder.getContext().getAuthentication());
+        log.info("SecurityContext Authentication : "+SecurityContextHolder.getContext().getAuthentication());
         filterChain.doFilter(request, response);
     }
 }

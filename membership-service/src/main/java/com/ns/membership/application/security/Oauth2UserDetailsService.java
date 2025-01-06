@@ -9,10 +9,8 @@ import com.ns.membership.application.port.out.FindMembershipPort;
 import com.ns.membership.application.port.out.RegisterMembershipPort;
 import com.ns.membership.domain.Membership;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -20,6 +18,7 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class Oauth2UserDetailsService extends DefaultOAuth2UserService {
@@ -37,27 +36,27 @@ public class Oauth2UserDetailsService extends DefaultOAuth2UserService {
     // 함수 종료시 @AuthenticationPrincipal 어노테이션이 만들어진다.
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        System.out.println("getClientRegistration = " + userRequest.getClientRegistration()); // registrationId로 어떤 OAuth로 로그인 했는지 확인 가능
-        System.out.println("getAccessToken = " + userRequest.getAccessToken().getTokenValue());
+        log.info("getClientRegistration = " + userRequest.getClientRegistration()); // registrationId로 어떤 OAuth로 로그인 했는지 확인 가능
+        log.info("getAccessToken = " + userRequest.getAccessToken().getTokenValue());
 
         OAuth2User oAuth2User = super.loadUser(userRequest);
         // 구글로그인 버튼 클릭 -> 구글로그인창 -> 로그인을 완료 -> code를 리턴(OAuth2-Client 라이브러리) -> AccessToken 요청
         // userRequest 정보 -> 회원 프로필 받아야함(loadUser함수 호출) -> 구글로부터 회원프로필 받아준다.
-        System.out.println("getAttributes = " + oAuth2User.getAttributes());
+        log.info("getAttributes = " + oAuth2User.getAttributes());
 
         OAuth2UserInfo oAuth2UserInfo = null;
         if (userRequest.getClientRegistration().getRegistrationId().equals("google")) {
-            System.out.println("구글 로그인 요청");
+            log.info("구글 로그인 요청");
             oAuth2UserInfo = new GoogleUserInfo(oAuth2User.getAttributes());
         } else if (userRequest.getClientRegistration().getRegistrationId().equals("naver")) {
-            System.out.println("네이버 로그인 요청");
+            log.info("네이버 로그인 요청");
             oAuth2UserInfo = new NaverUserInfo(oAuth2User.getAttributes());
         } else if (userRequest.getClientRegistration().getRegistrationId().equals("kakao")) {
-            System.out.println("카카오 로그인 요청");
+            log.info("카카오 로그인 요청");
             oAuth2UserInfo = new KakaoUserInfo(oAuth2User.getAttributes());
         }
         else {
-            System.out.println("지원하지 않는 OAuth2UserInfo 입니다.");
+            log.info("지원하지 않는 OAuth2UserInfo 입니다.");
         }
 
         String provider = oAuth2UserInfo.getProvider(); // google
@@ -71,7 +70,7 @@ public class Oauth2UserDetailsService extends DefaultOAuth2UserService {
                 new Membership.MembershipAccount(account)).get();
 
         if (userData == null) {
-            System.out.println("로그인이 최초입니다.");
+            log.info("로그인이 최초입니다.");
             registerMembershipPort.createMembership(
                     new Membership.MembershipName(account), // todo.
                     new Membership.MembershipAccount(account),
@@ -87,7 +86,7 @@ public class Oauth2UserDetailsService extends DefaultOAuth2UserService {
                     new Membership.MembershipProviderId(providerId)
             );
         } else {
-            System.out.println("구글 로그인을 이미 한적이 있습니다. 당신은 자동회원가입이 되어 있습니다.");
+            log.info("구글 로그인을 이미 한적이 있습니다. 당신은 자동회원가입이 되어 있습니다.");
         }
 
         // 회원 가입을 강제로 진행해볼 예정

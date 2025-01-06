@@ -2,6 +2,7 @@ package com.ns.membership.application.security;
 
 import com.ns.membership.adapter.out.persistance.MembershipJpaEntity;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
+@Slf4j
 public class CustomUserDetails implements UserDetails, OAuth2User {
 
     private final MembershipJpaEntity membershipJpaEntity;
@@ -39,10 +41,10 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
         GrantedAuthority authority = new SimpleGrantedAuthority(membershipJpaEntity.getRole());
         collection.add(authority);
 
-        System.out.println("Granted Authority: " + authority.getAuthority());
+        log.info("Granted Authority: " + authority.getAuthority());
 
         String role = membershipJpaEntity.getRole();
-        System.out.println("User Role: " + role);
+        log.info("User Role: " + role);
 
         return collection;
     }

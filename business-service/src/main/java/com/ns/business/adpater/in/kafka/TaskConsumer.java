@@ -69,7 +69,7 @@ public class TaskConsumer {
             ObjectMapper mapper = new ObjectMapper();
             ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(1));
             for (ConsumerRecord<String, String> record : records) {
-                System.out.println("Received message: " + record.value());
+                log.info("processConsumerThread: " + record.value());
 
                 try {
                     Task tasks = mapper.readValue(record.value(), Task.class);
@@ -105,7 +105,7 @@ public class TaskConsumer {
         }
 
         catch(RuntimeException e) {
-            log.error("Error processing subtask: " + e.getMessage());
+            log.error("getUserDataByMembershipId: " + e.getMessage());
             subTask.setStatus("fail");
             subTask.setData(null);
         }
@@ -124,7 +124,7 @@ public class TaskConsumer {
             subTask.setStatus(status);
 
         } catch(RuntimeException e){
-            log.error("Error processing subatsk : "+e.getMessage());
+            log.error("Error Register: "+e.getMessage());
             subTask.setData(null);
             subTask.setStatus("fail");
         }
