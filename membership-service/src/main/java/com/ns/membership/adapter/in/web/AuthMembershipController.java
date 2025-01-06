@@ -60,7 +60,7 @@ public class AuthMembershipController {
 
             return loginMembershipUseCase.LoginMembership(command);
         } catch (InternalAuthenticationServiceException e) {
-            log.error("Authentication service exception occurred: {}", e.getMessage(), e);
+            log.error("Authentication exception: {}", e.getMessage(), e);
             throw e;
         }
     }

@@ -65,7 +65,7 @@ public class ResultConsumer {
     }
 
     private void processRecord(ConsumerRecord<String, String> record) {
-        log.info("Received message: " + record.value());
+        log.info("processRecord: " + record.value());
 
         Task task = mapRecordToTask(record.value());
         String data = mapTaskToData(task);
@@ -79,7 +79,7 @@ public class ResultConsumer {
         if (latch != null) {
             latch.countDown();
         } else {
-            log.warn("CountDownLatch is null for task ID: {}", task.getTaskID());
+            log.warn("CountDownLatch is null: {}", task.getTaskID());
         }
     }
 

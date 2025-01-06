@@ -91,7 +91,7 @@ public class KakaoService {
                 String.class
         );
 
-        log.info("Received json : "+ response.getBody());
+        log.info("json : "+ response.getBody());
         JSONParser jsonParser = new JSONParser();
         JSONObject jsonObj    = (JSONObject) jsonParser.parse(response.getBody());
         JSONObject account = (JSONObject) jsonObj.get("kakao_account");
