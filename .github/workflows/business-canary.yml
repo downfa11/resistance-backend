@@ -5,7 +5,7 @@ env:
   BUILD_ID: ${{ github.sha }}
 
 on:
-  push:
+  pull_request:
     branches: [ "main" ]
 
 jobs:
