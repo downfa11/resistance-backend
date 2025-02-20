@@ -11,8 +11,7 @@ import java.util.Set;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Membership {
 
-    @Getter
-    private final String membershipId;
+    @Getter private final String membershipId;
     @Getter private final String name;
     @Getter private final String account;
     @Getter private final String password;

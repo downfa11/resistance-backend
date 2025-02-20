@@ -21,9 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
-    private final JwtTokenProvider jwtTokenProvider;
-
-
+    //private final JwtTokenProvider jwtTokenProvider;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -43,22 +41,22 @@ public class SecurityConfig {
 
         //경로별 인가 작업
         http.authorizeHttpRequests((auth) -> auth
-                .requestMatchers("/actuator/**",
-                        "/membership/login",
-                        "/membership/register/temp",
-                        "/",
-                        "/join",
-                        "/membership/register/**",
-                         "/swagger-ui.html",
-                         "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**"
-                        ).permitAll()
-                .requestMatchers("/manager/**").hasAnyRole("MANAGER", "ADMIN")
-                .requestMatchers("/admin/**").hasAnyRole("ADMIN")
-                .anyRequest().authenticated());
+//                .requestMatchers("/actuator/**",
+//                        "/membership/login",
+//                        "/membership/register/temp",
+//                        "/",
+//                        "/join",
+//                        "/membership/register/**",
+//                         "/swagger-ui.html",
+//                         "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**"
+//                        ).permitAll()
+//                .requestMatchers("/manager/**").hasAnyRole("MANAGER", "ADMIN")
+//                .requestMatchers("/admin/**").hasAnyRole("ADMIN")
+                .anyRequest().permitAll());
 
 
-        http.addFilterBefore(new JWTFilter(jwtTokenProvider), LoginFilter.class);
-        http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+     //   http.addFilterBefore(new JWTFilter(jwtTokenProvider), LoginFilter.class);
+       // http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
 
         //세션 설정
         http.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

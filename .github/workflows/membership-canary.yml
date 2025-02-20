@@ -6,8 +6,6 @@ env:
   HELM_BRANCH: dev
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 

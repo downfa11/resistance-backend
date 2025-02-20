@@ -1,13 +1,8 @@
 package com.ns.membership.adapter.out.persistance;
 
-import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
-import java.util.List;
 import java.util.Optional;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class MembershipCustomRepositoryImpl implements MembershipCustomRepository{
@@ -25,8 +20,6 @@ public class MembershipCustomRepositoryImpl implements MembershipCustomRepositor
 
         MembershipJpaEntity result = jpaQueryFactory
                 .selectFrom(membership)
-                .leftJoin(membership.friends).fetchJoin()
-                .leftJoin(membership.wantedFriends).fetchJoin()
                 .where(membership.membershipId.eq(membershipId))
                 .fetchOne();
 

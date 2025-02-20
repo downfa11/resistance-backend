@@ -1,11 +1,10 @@
 package com.ns.dedicated.adpater.in.web.dto;
 
-import lombok.Builder;
-import lombok.Data;
-
 import java.util.Map;
+import lombok.Builder;
+import lombok.Getter;
 
-@Data
+@Getter
 @Builder
 public class ExchangeRateResponse {
     private Map<String, Integer> exchangeRates;

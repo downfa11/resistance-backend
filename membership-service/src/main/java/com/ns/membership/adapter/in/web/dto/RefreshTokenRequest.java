@@ -1,12 +1,8 @@
 package com.ns.membership.adapter.in.web.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+@Getter
 public class RefreshTokenRequest {
     private String refreshToken;
 }

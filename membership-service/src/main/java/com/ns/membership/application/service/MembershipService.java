@@ -17,7 +17,6 @@ import com.ns.membership.application.port.out.ModifyMembershipPort;
 import com.ns.membership.application.port.out.RegisterMembershipPort;
 import com.ns.membership.application.port.out.SendTaskPort;
 import com.ns.membership.domain.Membership;
-import jakarta.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -43,7 +42,7 @@ public class MembershipService implements RegisterMembershipUseCase, ModifyMembe
     @Override
     @Transactional
     public Membership registerMembership(RegisterMembershipCommand command) {
-        if(!validateEmailAndAccount(command.getEmail(), command.getAccount()))
+        if(validateEmailAndAccount(command.getEmail(), command.getAccount()))
             return null;
 
         MembershipJpaEntity jpaEntity = registerMembershipJpaEntity(command);

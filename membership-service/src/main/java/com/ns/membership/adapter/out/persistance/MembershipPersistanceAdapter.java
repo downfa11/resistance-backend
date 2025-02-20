@@ -70,9 +70,7 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
 
         String accountValue= account.getAccountValue();
         String emailValue= email.getEmailValue();
-        MembershipJpaEntity membershipJpaEntity = membershipRepository.findByAccountOrEmail(accountValue,emailValue)
-                .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + accountValue+", "+emailValue));
-        return Optional.of(membershipJpaEntity);
+        return membershipRepository.findByAccountOrEmail(accountValue,emailValue);
     }
 
     @Override
@@ -89,26 +87,20 @@ public class MembershipPersistanceAdapter implements RegisterMembershipPort, Fin
     public Optional<MembershipJpaEntity> findMembershipByEmail(Membership.MembershipEmail email) {
 
         String emailValue= email.getEmailValue();
-        MembershipJpaEntity membershipJpaEntity = membershipRepository.findByEmail(emailValue)
-                .orElseThrow(() -> new EntityNotFoundException("Membership not found for "+emailValue));
-        return Optional.of(membershipJpaEntity);
+        return membershipRepository.findByEmail(emailValue);
     }
 
     @Override
     public Optional<MembershipJpaEntity> findMembershipByAccount(Membership.MembershipAccount account) {
 
         String accountValue= account.getAccountValue();
-        MembershipJpaEntity membershipJpaEntity = membershipRepository.findByAccount(accountValue)
-                .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + accountValue));
-        return Optional.of(membershipJpaEntity);
+        return membershipRepository.findByAccount(accountValue);
     }
 
     @Override
     public Optional<MembershipJpaEntity> findMembershipByName(Membership.MembershipName name) {
         String nameValue= name.getNameValue();
-        MembershipJpaEntity membershipJpaEntity = membershipRepository.findByName(nameValue)
-                .orElseThrow(() -> new EntityNotFoundException("Membership not found for " + nameValue));
-        return Optional.of(membershipJpaEntity);
+        return membershipRepository.findByName(nameValue);
     }
 
 
