@@ -3,11 +3,11 @@ package com.ns.membership.application.port.in.command;
 import com.ns.common.SelfValidating;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 @Builder
-@Data
+@Getter
 @EqualsAndHashCode(callSuper = false)
 
 public class LoginMembershipCommand extends SelfValidating<LoginMembershipCommand> {

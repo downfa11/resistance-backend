@@ -18,7 +18,6 @@ import com.ns.dedicated.application.port.out.ModifyBoardPort;
 import com.ns.dedicated.application.port.out.RegisterBoardPort;
 import com.ns.dedicated.domain.Board;
 import jakarta.transaction.Transactional;
-import jakarta.websocket.OnError;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;

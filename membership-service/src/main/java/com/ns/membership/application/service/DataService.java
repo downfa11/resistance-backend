@@ -55,7 +55,7 @@ public class DataService implements UserDataRequestUseCase {
             return convertUserDataList(result);
 
         } catch (Exception e) {
-            log.error("Error retrieving user data: ", e);
+            log.error("Error getUserData: ", e);
             return Collections.emptyList();
         }
     }

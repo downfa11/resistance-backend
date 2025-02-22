@@ -4,12 +4,14 @@ import com.ns.membership.application.port.out.AuthMembershipPort;
 import com.ns.membership.domain.Membership;
 import io.jsonwebtoken.*;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Date;
 
+@Slf4j
 @Component
 public class JwtTokenProvider implements AuthMembershipPort {
 
@@ -40,7 +42,7 @@ public class JwtTokenProvider implements AuthMembershipPort {
                 .parseClaimsJws(token)
                 .getBody();
 
-        System.out.println("claims: "+claims);
+        log.info("claims: "+claims);
 
         String membershipIdString = claims.get("sub", String.class);
         Long membershipId = Long.parseLong(membershipIdString);
@@ -88,7 +90,7 @@ public class JwtTokenProvider implements AuthMembershipPort {
             // Expired JWT token: 토큰의 유효기간이 만료된 경우 발생하는 예외
             // Unsupported JWT token: 지원하지 않는 JWT 토큰일 때 발생하는 예외
             // JWT claims string is empty: JWT 토큰이 비어있을 때 발생하는 예외
-            System.out.println("[ERROR] jwtToken error : "+ex);
+            log.info("[ERROR] jwtToken error : "+ex);
         }
         return false;
     }

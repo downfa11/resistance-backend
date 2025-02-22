@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ns.common.Task;
 import com.ns.membership.application.port.out.SendTaskPort;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Properties;
 
+@Slf4j
 @Component
 public class TaskProducer implements SendTaskPort {
     private final KafkaProducer<String, String> producer;
@@ -36,7 +38,7 @@ public class TaskProducer implements SendTaskPort {
 
         producer.send(record, (metadata, exception) -> {
             if (exception == null) {
-                System.out.println("Message sent successfully. Offset: " + metadata.offset());
+                log.info("Message sent successfully. Offset: " + metadata.offset());
             } else {
                 exception.printStackTrace();
             }
@@ -54,6 +56,6 @@ public class TaskProducer implements SendTaskPort {
     @Override
     public void sendTaskPort(Task task) {
         this.sendTask(task.getTaskID(),task);
-        System.out.println("Task ID : " + task.getTaskID());
+        log.info("Task ID : " + task.getTaskID());
     }
 }

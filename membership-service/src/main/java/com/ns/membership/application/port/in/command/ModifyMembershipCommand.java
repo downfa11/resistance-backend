@@ -1,19 +1,16 @@
 package com.ns.membership.application.port.in.command;
 
 import com.ns.common.SelfValidating;
-import com.ns.membership.domain.userData;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
-import java.util.List;
 import java.util.Set;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 @Builder
-@Data
+@Getter
 @EqualsAndHashCode(callSuper = false)
 
 public class ModifyMembershipCommand extends SelfValidating<ModifyMembershipCommand> {

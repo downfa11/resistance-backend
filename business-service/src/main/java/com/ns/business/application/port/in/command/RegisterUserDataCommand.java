@@ -1,15 +1,13 @@
 package com.ns.business.application.port.in.command;
 
 import com.ns.common.SelfValidating;
-import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 @Builder
-@Data
+@Getter
 @EqualsAndHashCode(callSuper = false)
 
 public class RegisterUserDataCommand extends SelfValidating<RegisterUserDataCommand> {
