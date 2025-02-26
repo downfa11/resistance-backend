@@ -9,13 +9,10 @@ import lombok.Getter;
 @Builder
 @Getter
 @EqualsAndHashCode(callSuper = false)
-
 public class RegisterBoardCommand extends SelfValidating<RegisterBoardCommand> {
 
-    @NotNull
-    private final String title;
-    @NotNull
-    private final String contents;
+    @NotNull private final String title;
+    @NotNull private final String contents;
 
     public RegisterBoardCommand(String title, String contents) {
 

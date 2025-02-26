@@ -28,6 +28,7 @@ public class UserData {
                 userEnergy.userEnergy, userScenario.userScenario, userHead.userHead, userBody.userBody,
                 userArm.userArm, userHealth.userHealth, userAttack.userAttack, userCritical.userCritical, userDurability.userDurability);
     }
+
     @Value
     public static class UserId {
         private Long userId;

@@ -66,7 +66,7 @@ public class MembershipService implements RegisterMembershipUseCase, ModifyMembe
         return membershipMapper.mapToDomainEntity(jpaEntity);
     }
 
-    private boolean validateEmailAndAccount(String email, String account){
+    public boolean validateEmailAndAccount(String email, String account){
         Optional<MembershipJpaEntity> memberByAccount = findMembershipPort.findMembershipByAccount(new Membership.MembershipAccount(account));
         Optional<MembershipJpaEntity> memberByEmail = findMembershipPort.findMembershipByEmail(new Membership.MembershipEmail(email));
 

@@ -8,7 +8,6 @@ import lombok.Getter;
 @Builder
 @Getter
 @EqualsAndHashCode(callSuper = false)
-
 public class FindMembershipCommand extends SelfValidating<FindMembershipCommand> {
 
     private final String membershipId;

@@ -1,7 +1,6 @@
 package com.ns.membership.application.service;
 
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ns.common.CountDownLatchManager;
@@ -14,16 +13,16 @@ import com.ns.membership.application.port.in.command.UserDataRequestCommand;
 import com.ns.membership.application.port.out.SendTaskPort;
 import com.ns.membership.domain.userData;
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @UseCase

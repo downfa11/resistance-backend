@@ -1,9 +1,8 @@
 package com.ns.membership.domain;
 
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
-
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor

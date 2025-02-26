@@ -8,7 +8,6 @@ import lombok.Getter;
 @Builder
 @Getter
 @EqualsAndHashCode(callSuper = false)
-
 public class FindUserDataCommand extends SelfValidating<FindUserDataCommand> {
 
     private final Long userId;

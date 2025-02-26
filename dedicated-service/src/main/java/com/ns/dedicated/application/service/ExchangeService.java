@@ -33,8 +33,8 @@ import java.util.Map;
 @UseCase
 public class ExchangeService implements ExchangeUseCase {
 
-    private static final String EXCHANGE_KEY = "exchangeRates";
-    private static final String USAGE_KEY = "usage";
+    public static final String EXCHANGE_KEY = "exchangeRates";
+    public static final String USAGE_KEY = "usage";
     private static final Double BASE_RATE = 0.95;
     private static final Double RELATIVE_RATE_FACTOR = 0.1;
 
@@ -89,7 +89,7 @@ public class ExchangeService implements ExchangeUseCase {
         return rate * adjustRate;
     }
 
-    private Map<String, Integer> getUsageData() {
+    public Map<String, Integer> getUsageData() {
         Map<String, String> usageDataToString = exchangeOperations.entries(USAGE_KEY);
         Map<String, Integer> usageDataToInteger = new HashMap<>();
 
@@ -110,7 +110,7 @@ public class ExchangeService implements ExchangeUseCase {
         exchangeOperations.increment(USAGE_KEY, money, 1);
     }
 
-    private Integer calculateTotalUsage() {
+    public Integer calculateTotalUsage() {
         Integer totalUsage = getUsageData().values()
                 .stream()
                 .mapToInt(Integer::intValue)

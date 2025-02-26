@@ -10,6 +10,5 @@ import lombok.Getter;
 @EqualsAndHashCode(callSuper = false)
 
 public class FindBoardCommand extends SelfValidating<FindBoardCommand> {
-
     private final Long boardId;
 }

@@ -1,14 +1,11 @@
 package com.ns.membership.domain;
 
-import lombok.AccessLevel;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Value;
 
-import java.util.List;
-import java.util.Set;
-
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
 public class Membership {
 
     @Getter private final String membershipId;
