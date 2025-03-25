@@ -71,6 +71,17 @@ Apache Kafka와 `java.util.concurrent`의 CountDownLatch를 이용해서 각 마
 
 Kafka IPC의 오류나 특정 서비스의 장애 상황 등 으로 해당 기능 (Business-service의 친구 목록, 동료 목록 조회)이 작동하지 않아도 서비스에 지장가지 않도록 구성
 
+<br>
+
+**쿼리문 튜닝을 통한 성능 개선 시도**
+
+문제 상황 : 성능 테스트 과정에서 전체 테이블에서 rand 연산하여 row가 증가할수록 성능 저하를 야기함
+
+해결 방안 : 서브쿼리 내에서 연산하여 훨씬 적은 양의 데이터만 처리하도록 개선
+
+ - SQL문 실행 시간 20% 감소,  JMeter 30,000건 부하 테스트 Latency 91%, TPS 8% 개선
+
+
 
 <br>
 
