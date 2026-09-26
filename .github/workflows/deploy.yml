@@ -60,12 +60,13 @@ jobs:
           python -m pip install --requirement cluster-config/scripts/requirements-validation.txt
           python cluster-config/scripts/update_image_digests.py \
             --repo-root cluster-config \
-            --image "resistance-server=${IMAGE_DIGEST}"
+            --image "resistance-server=${IMAGE_DIGEST}" \
+            --activate resistance
           python cluster-config/scripts/validate-k8s-manifests.py --repo-root cluster-config
           cd cluster-config
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add clusters/home/resistance/deployment.yaml
+          git add clusters/home/resistance.yaml clusters/home/resistance/deployment.yaml
           git diff --cached --quiet && exit 0
           git commit -m "deploy: resistance-server ${SOURCE_SHA}"
           for attempt in 1 2 3; do
