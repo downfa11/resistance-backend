@@ -1,9 +1,0 @@
-rootProject.name = 'resistance'
-include 'common'
-include 'logging-service'
-include 'membership-service'
-include 'game-service'
-include 'task-consumer'
-include 'dedicated-service'
-include 'business-service'
-

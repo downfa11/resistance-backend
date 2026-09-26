@@ -1,0 +1,76 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [deploy]
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: deploy-resistance
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Verify deploy branch still points at this source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: test "$(gh api repos/${{ github.repository }}/git/ref/heads/deploy --jq .object.sha)" = "$SOURCE_SHA"
+      - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+      - uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: build
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/downfa11/resistance-server:sha-${{ github.event.workflow_run.head_sha }}
+      - uses: yokawasa/action-setup-kube-tools@b16d49b2c459d33cf9d4c300a220ef0bcdbc730a # v0.14.0
+        with:
+          helm: "3.17.3"
+          kustomize: "5.6.0"
+          kubeconform: "0.6.7"
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Update cluster configuration
+        env:
+          CLUSTER_CONFIG_TOKEN: ${{ secrets.CLUSTER_CONFIG_TOKEN }}
+          IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+        shell: bash
+        run: |
+          test -n "$CLUSTER_CONFIG_TOKEN"
+          git clone "https://x-access-token:${CLUSTER_CONFIG_TOKEN}@github.com/downfa11/cluster-config.git" cluster-config
+          python -m pip install --requirement cluster-config/scripts/requirements-validation.txt
+          python cluster-config/scripts/update_image_digests.py \
+            --repo-root cluster-config \
+            --image "resistance-server=${IMAGE_DIGEST}"
+          python cluster-config/scripts/validate-k8s-manifests.py --repo-root cluster-config
+          cd cluster-config
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add clusters/home/resistance/deployment.yaml
+          git diff --cached --quiet && exit 0
+          git commit -m "deploy: resistance-server ${SOURCE_SHA}"
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            git push origin HEAD:main && exit 0
+            sleep $((attempt * 5))
+          done
+          exit 1

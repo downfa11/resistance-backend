@@ -1,0 +1,18 @@
+services:
+  resistance-server:
+    build: .
+    environment:
+      RESISTANCE_ENV: development
+      RESISTANCE_ADDR: :8080
+      RESISTANCE_DB_PATH: /data/app.db
+      RESISTANCE_ASSET_ROOT: /data/assets
+      RESISTANCE_JWT_SECRET: local-resistance-secret-change-me
+      RESISTANCE_ALLOWED_ORIGINS: http://localhost:3000
+    ports:
+      - "8080:8080"
+    volumes:
+      - resistance-data:/data
+    restart: unless-stopped
+
+volumes:
+  resistance-data:

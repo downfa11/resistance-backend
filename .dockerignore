@@ -1,0 +1,9 @@
+.git
+.cache
+bin
+server.exe
+*.db
+*.db-shm
+*.db-wal
+*.log
+.env
