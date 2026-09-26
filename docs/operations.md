@@ -3,6 +3,12 @@
 Run locally with `go run ./cmd/server` after setting `RESISTANCE_JWT_SECRET`, or copy
 `.env.example` to `.env` and run `docker compose up --build`.
 
+Set `RESISTANCE_BOOTSTRAP_ADMIN_ACCOUNT`, `RESISTANCE_BOOTSTRAP_ADMIN_EMAIL`, and
+`RESISTANCE_BOOTSTRAP_ADMIN_PASSWORD` together to create the first administrator.
+The bootstrap is idempotent: restarting with the same account keeps its user id,
+restores the `ADMIN`/`ACTIVE` state, and rotates the password to the configured
+value. Keep these values in the deployment secret, never in Git.
+
 SQLite uses WAL, foreign keys, a five-second busy timeout, and one process-local
 writer connection. Mount `/data` on persistent storage. Run only one server
 instance against a database file; horizontal replicas require a different

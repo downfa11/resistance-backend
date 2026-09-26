@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -17,14 +18,17 @@ import (
 )
 
 const (
-	readinessTimeout = time.Second
-	accessTokenTTL   = 15 * time.Minute
-	refreshTokenTTL  = 30 * 24 * time.Hour
+	readinessTimeout       = time.Second
+	accessTokenTTL         = 15 * time.Minute
+	refreshTokenTTL        = 30 * 24 * time.Hour
+	sessionCleanupInterval = time.Hour
+	sessionCleanupBatch    = 1000
 )
 
 type App struct {
-	db      *sql.DB
-	handler http.Handler
+	db       *sql.DB
+	handler  http.Handler
+	sessions *auth.SessionRepository
 }
 
 func New(cfg config.Config, db *sql.DB) (*App, error) {
@@ -32,15 +36,25 @@ func New(cfg config.Config, db *sql.DB) (*App, error) {
 		return nil, fmt.Errorf("create server: database is required")
 	}
 
-	app := &App{db: db}
+	app := &App{db: db, sessions: auth.NewSessionRepository(db)}
 	router := httpapi.NewRouter()
 	userRepository := users.NewRepository(db)
 	identityService := auth.NewService(userRepository, auth.NewPasswordHasher(auth.DefaultPasswordParams()))
+	if cfg.BootstrapAdminAccount != "" {
+		bootstrapCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if _, err := identityService.BootstrapAdministrator(bootstrapCtx, auth.RegisterRequest{
+			Account: cfg.BootstrapAdminAccount, Email: cfg.BootstrapAdminEmail,
+			Password: cfg.BootstrapAdminPassword, DisplayName: cfg.BootstrapAdminDisplayName,
+		}); err != nil {
+			return nil, fmt.Errorf("bootstrap administrator: %w", err)
+		}
+	}
 	tokenManager, err := auth.NewTokenManager(cfg.JWTSecret, accessTokenTTL)
 	if err != nil {
 		return nil, err
 	}
-	sessionService := auth.NewSessionService(auth.NewSessionRepository(db), userRepository, tokenManager, refreshTokenTTL)
+	sessionService := auth.NewSessionService(app.sessions, userRepository, tokenManager, refreshTokenTTL)
 	authMiddleware := auth.NewMiddleware(tokenManager)
 	auth.NewHandler(identityService, sessionService, userRepository).RegisterRoutes(router, authMiddleware)
 	notificationService := notifications.NewService(notifications.NewRepository(db))
@@ -56,6 +70,37 @@ func New(cfg config.Config, db *sql.DB) (*App, error) {
 		),
 	)
 	return app, nil
+}
+
+func (a *App) StartMaintenance(ctx context.Context) {
+	go func() {
+		a.cleanupExpiredSessions(ctx)
+		ticker := time.NewTicker(sessionCleanupInterval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				a.cleanupExpiredSessions(ctx)
+			}
+		}
+	}()
+}
+
+func (a *App) cleanupExpiredSessions(ctx context.Context) {
+	for {
+		deleted, err := a.sessions.DeleteExpiredFamilies(ctx, time.Now().UTC(), sessionCleanupBatch)
+		if err != nil {
+			if ctx.Err() == nil {
+				log.Printf("cleanup expired refresh sessions: %v", err)
+			}
+			return
+		}
+		if deleted < sessionCleanupBatch {
+			return
+		}
+	}
 }
 
 func (a *App) Handler() http.Handler {

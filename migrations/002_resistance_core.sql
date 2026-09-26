@@ -3,7 +3,7 @@
 CREATE TABLE resistance_profiles (
     user_id INTEGER PRIMARY KEY,
     address TEXT NOT NULL DEFAULT '',
-    gold INTEGER NOT NULL DEFAULT 0 CHECK (gold >= 0),
+    gold INTEGER NOT NULL DEFAULT 0 CHECK (gold BETWEEN 0 AND 1000000000000),
     high_score INTEGER NOT NULL DEFAULT 0 CHECK (high_score >= 0),
     energy INTEGER NOT NULL DEFAULT 100 CHECK (energy BETWEEN 0 AND 10000),
     scenario INTEGER NOT NULL DEFAULT 0 CHECK (scenario >= 0),

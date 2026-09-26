@@ -42,6 +42,35 @@ func (r *Repository) Create(ctx context.Context, user *User) error {
 	return nil
 }
 
+func (r *Repository) UpsertAdministrator(ctx context.Context, user *User) error {
+	if r == nil || r.db == nil || user == nil {
+		return fmt.Errorf("bootstrap administrator: repository and user are required")
+	}
+	_, err := r.db.ExecContext(ctx, `
+		INSERT INTO users (account, email, password_hash, display_name, role, status, created_at, updated_at)
+		VALUES (?, ?, ?, ?, 'ADMIN', 'ACTIVE', ?, ?)
+		ON CONFLICT(account) DO UPDATE SET
+			email = excluded.email,
+			password_hash = excluded.password_hash,
+			display_name = excluded.display_name,
+			role = 'ADMIN',
+			status = 'ACTIVE',
+			updated_at = excluded.updated_at
+	`, user.Account, user.Email, user.PasswordHash, user.DisplayName, formatTime(user.CreatedAt), formatTime(user.UpdatedAt))
+	if err != nil {
+		if isConstraintError(err) {
+			return fmt.Errorf("%w: %v", ErrConflict, err)
+		}
+		return fmt.Errorf("upsert administrator: %w", err)
+	}
+	stored, err := r.FindByAccount(ctx, user.Account)
+	if err != nil {
+		return err
+	}
+	*user = *stored
+	return nil
+}
+
 func (r *Repository) FindByID(ctx context.Context, id int64) (*User, error) {
 	return r.find(ctx, `SELECT `+userColumns+` FROM users WHERE id = ?`, id)
 }

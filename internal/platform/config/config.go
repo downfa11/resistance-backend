@@ -11,12 +11,16 @@ const minimumProductionSecretBytes = 32
 var ErrInvalid = errors.New("invalid Resistance server configuration")
 
 type Config struct {
-	Environment    string
-	Addr           string
-	DBPath         string
-	JWTSecret      string
-	AllowedOrigins []string
-	AssetRoot      string
+	Environment               string
+	Addr                      string
+	DBPath                    string
+	JWTSecret                 string
+	AllowedOrigins            []string
+	AssetRoot                 string
+	BootstrapAdminAccount     string
+	BootstrapAdminEmail       string
+	BootstrapAdminPassword    string
+	BootstrapAdminDisplayName string
 }
 
 type LookupFunc func(string) string
@@ -27,11 +31,15 @@ func Load(lookup LookupFunc) (Config, error) {
 	}
 
 	cfg := Config{
-		Environment: strings.ToLower(valueOrDefault(lookup("RESISTANCE_ENV"), "development")),
-		Addr:        valueOrDefault(lookup("RESISTANCE_ADDR"), ":8080"),
-		DBPath:      valueOrDefault(lookup("RESISTANCE_DB_PATH"), "data/resistance.db"),
-		JWTSecret:   strings.TrimSpace(lookup("RESISTANCE_JWT_SECRET")),
-		AssetRoot:   valueOrDefault(lookup("RESISTANCE_ASSET_ROOT"), "data/assets"),
+		Environment:               strings.ToLower(valueOrDefault(lookup("RESISTANCE_ENV"), "development")),
+		Addr:                      valueOrDefault(lookup("RESISTANCE_ADDR"), ":8080"),
+		DBPath:                    valueOrDefault(lookup("RESISTANCE_DB_PATH"), "data/resistance.db"),
+		JWTSecret:                 strings.TrimSpace(lookup("RESISTANCE_JWT_SECRET")),
+		AssetRoot:                 valueOrDefault(lookup("RESISTANCE_ASSET_ROOT"), "data/assets"),
+		BootstrapAdminAccount:     strings.TrimSpace(lookup("RESISTANCE_BOOTSTRAP_ADMIN_ACCOUNT")),
+		BootstrapAdminEmail:       strings.ToLower(strings.TrimSpace(lookup("RESISTANCE_BOOTSTRAP_ADMIN_EMAIL"))),
+		BootstrapAdminPassword:    lookup("RESISTANCE_BOOTSTRAP_ADMIN_PASSWORD"),
+		BootstrapAdminDisplayName: valueOrDefault(lookup("RESISTANCE_BOOTSTRAP_ADMIN_DISPLAY_NAME"), "Resistance Admin"),
 	}
 	cfg.AllowedOrigins = splitUnique(lookup("RESISTANCE_ALLOWED_ORIGINS"))
 
@@ -45,6 +53,16 @@ func Load(lookup LookupFunc) (Config, error) {
 	}
 	if cfg.Environment == "production" && len([]byte(cfg.JWTSecret)) < minimumProductionSecretBytes {
 		return Config{}, fmt.Errorf("%w: production RESISTANCE_JWT_SECRET must be at least %d bytes", ErrInvalid, minimumProductionSecretBytes)
+	}
+	adminValues := []string{cfg.BootstrapAdminAccount, cfg.BootstrapAdminEmail, cfg.BootstrapAdminPassword}
+	configuredAdminValues := 0
+	for _, value := range adminValues {
+		if value != "" {
+			configuredAdminValues++
+		}
+	}
+	if configuredAdminValues != 0 && configuredAdminValues != len(adminValues) {
+		return Config{}, fmt.Errorf("%w: administrator account, email, and password must be configured together", ErrInvalid)
 	}
 
 	return cfg, nil

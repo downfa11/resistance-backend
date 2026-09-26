@@ -64,6 +64,25 @@ func TestServiceRejectsSuspendedUser(t *testing.T) {
 	}
 }
 
+func TestServiceBootstrapsAdministratorIdempotently(t *testing.T) {
+	t.Parallel()
+	repository := &memoryUsers{}
+	service := NewService(repository, stubPasswords{})
+	request := RegisterRequest{Account: "admin", Email: "admin@example.com", Password: "first-password", DisplayName: "Admin"}
+	first, err := service.BootstrapAdministrator(context.Background(), request)
+	if err != nil {
+		t.Fatalf("BootstrapAdministrator() error = %v", err)
+	}
+	request.Password = "rotated-password"
+	second, err := service.BootstrapAdministrator(context.Background(), request)
+	if err != nil {
+		t.Fatalf("BootstrapAdministrator() repeat error = %v", err)
+	}
+	if first.ID != second.ID || second.Role != users.RoleAdmin || second.PasswordHash != "hashed:rotated-password" {
+		t.Fatalf("bootstrapped administrator = %#v", second)
+	}
+}
+
 type memoryUsers struct {
 	items []*users.User
 }
@@ -79,6 +98,24 @@ func (m *memoryUsers) Create(_ context.Context, user *users.User) error {
 	user.ID = copy.ID
 	m.items = append(m.items, &copy)
 	return nil
+}
+
+func (m *memoryUsers) UpsertAdministrator(_ context.Context, user *users.User) error {
+	for index, item := range m.items {
+		if equalFold(item.Account, user.Account) {
+			copy := *user
+			copy.ID = item.ID
+			copy.Role = users.RoleAdmin
+			m.items[index] = &copy
+			*user = copy
+			return nil
+		}
+		if equalFold(item.Email, user.Email) {
+			return users.ErrConflict
+		}
+	}
+	user.Role = users.RoleAdmin
+	return m.Create(context.Background(), user)
 }
 
 func (m *memoryUsers) FindByID(_ context.Context, id int64) (*users.User, error) {

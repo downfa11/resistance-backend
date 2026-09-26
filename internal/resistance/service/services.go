@@ -102,7 +102,7 @@ func (s *Service) CreateSupporterCode(ctx context.Context, kind, code string, re
 	if kind == "" {
 		kind = "custom"
 	}
-	if code == "" || len(code) > 64 || rewardGold < 0 {
+	if code == "" || len(code) > 64 || rewardGold < 0 || rewardGold > domain.MaxGold {
 		return nil, domain.ErrInvalidInput
 	}
 	item := &domain.SupporterCode{Kind: kind, Code: code, RewardGold: rewardGold, Status: "AVAILABLE", CreatedAt: s.now().UTC()}
@@ -143,11 +143,7 @@ func (s *Service) UpdateSupporterDetail(ctx context.Context, id int64, title, de
 	if id < 1 || title == "" || details == "" {
 		return nil, domain.ErrInvalidInput
 	}
-	item := domain.SupporterDetail{ID: id, Title: title, Details: details, UpdatedAt: s.now().UTC()}
-	if err := s.repo.UpdateSupporterDetail(ctx, item); err != nil {
-		return nil, err
-	}
-	return &item, nil
+	return s.repo.UpdateSupporterDetail(ctx, domain.SupporterDetail{ID: id, Title: title, Details: details, UpdatedAt: s.now().UTC()})
 }
 func (s *Service) DeleteSupporterDetail(ctx context.Context, id int64) error {
 	if id < 1 {

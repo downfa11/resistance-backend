@@ -23,6 +23,7 @@ var accountPattern = regexp.MustCompile(`^[A-Za-z0-9_.-]{3,32}$`)
 
 type UserRepository interface {
 	Create(context.Context, *users.User) error
+	UpsertAdministrator(context.Context, *users.User) error
 	FindByID(context.Context, int64) (*users.User, error)
 	FindByAccount(context.Context, string) (*users.User, error)
 	FindByEmail(context.Context, string) (*users.User, error)
@@ -77,6 +78,32 @@ func (s *Service) Register(ctx context.Context, request RegisterRequest) (*users
 			return nil, ErrAlreadyExists
 		}
 		return nil, fmt.Errorf("create user: %w", err)
+	}
+	return user, nil
+}
+
+func (s *Service) BootstrapAdministrator(ctx context.Context, request RegisterRequest) (*users.User, error) {
+	request.Account = strings.TrimSpace(request.Account)
+	request.Email = strings.ToLower(strings.TrimSpace(request.Email))
+	request.DisplayName = strings.TrimSpace(request.DisplayName)
+	if !validRegistration(request) {
+		return nil, ErrInvalidInput
+	}
+	hash, err := s.passwords.Hash(request.Password)
+	if err != nil {
+		return nil, fmt.Errorf("hash administrator password: %w", err)
+	}
+	now := s.now().UTC()
+	user := &users.User{
+		Account: request.Account, Email: request.Email, PasswordHash: hash,
+		DisplayName: request.DisplayName, Role: users.RoleAdmin, Status: users.StatusActive,
+		CreatedAt: now, UpdatedAt: now,
+	}
+	if err := s.users.UpsertAdministrator(ctx, user); err != nil {
+		if errors.Is(err, users.ErrConflict) {
+			return nil, ErrAlreadyExists
+		}
+		return nil, fmt.Errorf("bootstrap administrator: %w", err)
 	}
 	return user, nil
 }

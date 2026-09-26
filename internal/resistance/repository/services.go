@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/downfa11/resistance-backend/internal/resistance/domain"
+	modernsqlite "modernc.org/sqlite"
 )
 
 type ExchangeRecord struct {
@@ -130,13 +131,13 @@ func (r *Repository) Exchange(ctx context.Context, userID int64, code string, qu
 		return nil, domain.ErrInsufficientCurrency
 	}
 	gold := quantity * int64(rate)
-	result, err = r.db.ExecContext(ctx, `UPDATE resistance_profiles SET gold = gold + ?, updated_at = ? WHERE user_id = ?`, gold, formatTime(now), userID)
+	result, err = r.db.ExecContext(ctx, `UPDATE resistance_profiles SET gold = gold + ?, updated_at = ? WHERE user_id = ? AND gold <= ?`, gold, formatTime(now), userID, domain.MaxGold-gold)
 	if err != nil {
 		return nil, fmt.Errorf("credit resistance gold: %w", err)
 	}
 	count, _ = result.RowsAffected()
 	if count == 0 {
-		return nil, domain.ErrNotFound
+		return nil, r.profileCreditError(ctx, userID)
 	}
 	if _, err := r.db.ExecContext(ctx, `UPDATE resistance_currency_rates SET uses = uses + ?, updated_at = ? WHERE code = ?`, quantity, formatTime(now), code); err != nil {
 		return nil, fmt.Errorf("update resistance rate usage: %w", err)
@@ -164,6 +165,9 @@ func (r *Repository) readExchangeBalances(ctx context.Context, item *domain.Exch
 func (r *Repository) CreateSupporterCode(ctx context.Context, item *domain.SupporterCode) error {
 	result, err := r.db.ExecContext(ctx, `INSERT INTO resistance_supporter_codes (kind, code, reward_gold, status, created_at) VALUES (?, ?, ?, 'AVAILABLE', ?)`, item.Kind, item.Code, item.RewardGold, formatTime(item.CreatedAt))
 	if err != nil {
+		if isConstraintError(err) {
+			return domain.ErrConflict
+		}
 		return fmt.Errorf("create supporter code: %w", err)
 	}
 	item.ID, err = result.LastInsertId()
@@ -254,16 +258,25 @@ func (r *Repository) CreateSupporterDetail(ctx context.Context, item *domain.Sup
 	return err
 }
 
-func (r *Repository) UpdateSupporterDetail(ctx context.Context, item domain.SupporterDetail) error {
-	result, err := r.db.ExecContext(ctx, `UPDATE resistance_supporter_details SET title = ?, details = ?, updated_at = ? WHERE id = ?`, item.Title, item.Details, formatTime(item.UpdatedAt), item.ID)
+func (r *Repository) UpdateSupporterDetail(ctx context.Context, item domain.SupporterDetail) (*domain.SupporterDetail, error) {
+	var created, updated string
+	err := r.db.QueryRowContext(ctx, `UPDATE resistance_supporter_details SET title = ?, details = ?, updated_at = ? WHERE id = ? RETURNING id, title, details, created_at, updated_at`, item.Title, item.Details, formatTime(item.UpdatedAt), item.ID).
+		Scan(&item.ID, &item.Title, &item.Details, &created, &updated)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, domain.ErrNotFound
+	}
 	if err != nil {
-		return err
+		return nil, err
 	}
-	count, _ := result.RowsAffected()
-	if count == 0 {
-		return domain.ErrNotFound
+	item.CreatedAt, err = parseTime(created)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	item.UpdatedAt, err = parseTime(updated)
+	if err != nil {
+		return nil, err
+	}
+	return &item, nil
 }
 
 func (r *Repository) DeleteSupporterDetail(ctx context.Context, id int64) error {
@@ -313,18 +326,34 @@ func (r *Repository) RedeemSupporterCode(ctx context.Context, userID int64, item
 	if count == 0 {
 		return domain.ErrConflict
 	}
-	profileResult, err := r.db.ExecContext(ctx, `UPDATE resistance_profiles SET gold = gold + ?, updated_at = ? WHERE user_id = ?`, item.RewardGold, formatTime(now), userID)
+	profileResult, err := r.db.ExecContext(ctx, `UPDATE resistance_profiles SET gold = gold + ?, updated_at = ? WHERE user_id = ? AND gold <= ?`, item.RewardGold, formatTime(now), userID, domain.MaxGold-item.RewardGold)
 	if err != nil {
 		return err
 	}
 	profileCount, _ := profileResult.RowsAffected()
 	if profileCount == 0 {
-		return domain.ErrNotFound
+		return r.profileCreditError(ctx, userID)
 	}
 	if _, err := r.db.ExecContext(ctx, `INSERT INTO resistance_supporter_redemptions (user_id, code_id, idempotency_key, request_hash, reward_gold, created_at) VALUES (?, ?, ?, ?, ?, ?)`, userID, item.ID, key, requestHash, item.RewardGold, formatTime(now)); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (r *Repository) profileCreditError(ctx context.Context, userID int64) error {
+	var exists int
+	if err := r.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM resistance_profiles WHERE user_id = ?)`, userID).Scan(&exists); err != nil {
+		return fmt.Errorf("check resistance profile: %w", err)
+	}
+	if exists == 0 {
+		return domain.ErrNotFound
+	}
+	return domain.ErrConflict
+}
+
+func isConstraintError(err error) bool {
+	var sqliteErr *modernsqlite.Error
+	return errors.As(err, &sqliteErr) && sqliteErr.Code()&0xff == 19
 }
 
 func (r *Repository) RedemptionByKey(ctx context.Context, userID int64, key string) (string, int64, error) {

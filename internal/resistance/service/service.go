@@ -37,18 +37,14 @@ func (s *Service) Profile(ctx context.Context, userID int64) (*domain.Profile, e
 }
 
 func (s *Service) PatchProfile(ctx context.Context, userID int64, patch domain.ProfilePatch) (*domain.Profile, error) {
-	if userID < 1 {
+	if userID < 1 || !patch.Valid() {
 		return nil, domain.ErrInvalidInput
 	}
-	stored, err := s.repo.FindProfile(ctx, userID)
-	if err != nil {
-		return nil, err
+	if patch.Address != nil {
+		address := strings.TrimSpace(*patch.Address)
+		patch.Address = &address
 	}
-	updated, err := patch.Apply(*stored)
-	if err != nil {
-		return nil, err
-	}
-	return s.repo.UpdateProfile(ctx, updated, s.now().UTC())
+	return s.repo.PatchProfile(ctx, userID, patch, s.now().UTC())
 }
 
 func (s *Service) RequestFriend(ctx context.Context, userID, targetID int64) error {

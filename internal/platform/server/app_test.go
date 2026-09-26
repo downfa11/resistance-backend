@@ -79,3 +79,29 @@ func TestReadinessFailsAfterDatabaseCloses(t *testing.T) {
 		t.Fatalf("status = %d, body = %s", recorder.Code, recorder.Body.String())
 	}
 }
+
+func TestNewBootstrapsConfiguredAdministrator(t *testing.T) {
+	db, err := platformsqlite.Open(context.Background(), filepath.Join(t.TempDir(), "resistance.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = db.Close() })
+	if err := platformsqlite.Migrate(context.Background(), db); err != nil {
+		t.Fatal(err)
+	}
+	cfg := config.Config{
+		JWTSecret: "test-signing-secret", BootstrapAdminAccount: "admin",
+		BootstrapAdminEmail: "admin@example.com", BootstrapAdminPassword: "long-password",
+		BootstrapAdminDisplayName: "Resistance Admin",
+	}
+	if _, err := New(cfg, db); err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	var role, status string
+	if err := db.QueryRow(`SELECT role, status FROM users WHERE account = 'admin'`).Scan(&role, &status); err != nil {
+		t.Fatal(err)
+	}
+	if role != "ADMIN" || status != "ACTIVE" {
+		t.Fatalf("administrator role=%q status=%q", role, status)
+	}
+}

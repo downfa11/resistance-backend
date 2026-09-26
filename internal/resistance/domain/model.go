@@ -34,6 +34,24 @@ type ProfilePatch struct {
 	Health, Attack, Critical, Durability *int
 }
 
+func (p ProfilePatch) Valid() bool {
+	return validOptionalInt(p.HighScore, 0, math.MaxInt) &&
+		validOptionalInt(p.Energy, 0, 10000) &&
+		validOptionalInt(p.Scenario, 0, math.MaxInt) &&
+		validOptionalInt(p.Head, 0, math.MaxInt) &&
+		validOptionalInt(p.Body, 0, math.MaxInt) &&
+		validOptionalInt(p.Arm, 0, math.MaxInt) &&
+		validOptionalInt(p.Health, 0, 100000) &&
+		validOptionalInt(p.Attack, 0, 100000) &&
+		validOptionalInt(p.Critical, 0, 10000) &&
+		validOptionalInt(p.Durability, 0, 100000) &&
+		(p.Address == nil || len([]rune(strings.TrimSpace(*p.Address))) <= 255)
+}
+
+func validOptionalInt(value *int, minimum, maximum int) bool {
+	return value == nil || (*value >= minimum && *value <= maximum)
+}
+
 func (p ProfilePatch) Apply(profile Profile) (Profile, error) {
 	if p.Address != nil {
 		profile.Address = strings.TrimSpace(*p.Address)
@@ -101,6 +119,8 @@ var DefaultCurrencyRates = map[string]int{
 	"XAG": 27,
 	"XPT": 1201,
 }
+
+const MaxGold int64 = 1_000_000_000_000
 
 func AdjustedRate(current int, usage, totalUsage int64) int {
 	if current < 1 {

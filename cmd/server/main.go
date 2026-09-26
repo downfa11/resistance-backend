@@ -38,6 +38,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	app.StartMaintenance(ctx)
 	log.Printf("resistance-server listening environment=%s addr=%s database=%s", cfg.Environment, cfg.Addr, cfg.DBPath)
 	if err := server.Serve(ctx, cfg.Addr, app.Handler()); err != nil {
 		log.Fatal(err)

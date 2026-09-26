@@ -166,6 +166,23 @@ func TestAdminRateAndSupporterCodeManagement(t *testing.T) {
 	if err := service.DeleteSupporterCode(context.Background(), created.ID); !errors.Is(err, domain.ErrConflict) {
 		t.Fatalf("delete missing supporter code error = %v", err)
 	}
+	if _, err := service.CreateSupporterCode(context.Background(), "founder", "DUPLICATE", 10); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := service.CreateSupporterCode(context.Background(), "founder", "DUPLICATE", 10); !errors.Is(err, domain.ErrConflict) {
+		t.Fatalf("duplicate supporter code error = %v", err)
+	}
+	detail, err := service.CreateSupporterDetail(context.Background(), "Original", "Details")
+	if err != nil {
+		t.Fatal(err)
+	}
+	updated, err := service.UpdateSupporterDetail(context.Background(), detail.ID, "Updated", "Changed")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if updated.CreatedAt.IsZero() || !updated.CreatedAt.Equal(detail.CreatedAt) {
+		t.Fatalf("updated supporter detail lost createdAt: %#v", updated)
+	}
 }
 
 func TestSupporterRedemptionAndContentPublication(t *testing.T) {
@@ -210,6 +227,31 @@ func TestSupporterRedemptionAndContentPublication(t *testing.T) {
 	}
 	if count != 2 {
 		t.Fatalf("supporter plus notice notifications = %d", count)
+	}
+}
+
+func TestSupporterRewardCannotOverflowGold(t *testing.T) {
+	db := openTestDB(t)
+	userID := insertUser(t, db, "overflow")
+	service := New(db)
+	if _, err := service.EnsureProfile(context.Background(), userID, ""); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(`UPDATE resistance_profiles SET gold = ? WHERE user_id = ?`, domain.MaxGold, userID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := service.CreateSupporterCode(context.Background(), "founder", "OVERFLOW", 1); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := service.RedeemSupporterCode(context.Background(), userID, "OVERFLOW", "overflow-1"); !errors.Is(err, domain.ErrConflict) {
+		t.Fatalf("overflow redemption error = %v", err)
+	}
+	profile, err := service.Profile(context.Background(), userID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if profile.Gold != domain.MaxGold {
+		t.Fatalf("gold = %d, want %d", profile.Gold, domain.MaxGold)
 	}
 }
 

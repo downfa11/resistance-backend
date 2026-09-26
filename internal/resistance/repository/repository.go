@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/downfa11/resistance-backend/internal/resistance/domain"
@@ -62,6 +63,62 @@ func (r *Repository) UpdateProfile(ctx context.Context, item domain.Profile, now
 		return nil, domain.ErrNotFound
 	}
 	return r.FindProfile(ctx, item.UserID)
+}
+
+func (r *Repository) PatchProfile(ctx context.Context, userID int64, patch domain.ProfilePatch, now time.Time) (*domain.Profile, error) {
+	sets := make([]string, 0, 12)
+	args := make([]any, 0, 13)
+	add := func(column string, value any) {
+		sets = append(sets, column+" = ?")
+		args = append(args, value)
+	}
+	if patch.Address != nil {
+		add("address", *patch.Address)
+	}
+	if patch.HighScore != nil {
+		add("high_score", *patch.HighScore)
+	}
+	if patch.Energy != nil {
+		add("energy", *patch.Energy)
+	}
+	if patch.Scenario != nil {
+		add("scenario", *patch.Scenario)
+	}
+	if patch.Head != nil {
+		add("head", *patch.Head)
+	}
+	if patch.Body != nil {
+		add("body", *patch.Body)
+	}
+	if patch.Arm != nil {
+		add("arm", *patch.Arm)
+	}
+	if patch.Health != nil {
+		add("health", *patch.Health)
+	}
+	if patch.Attack != nil {
+		add("attack", *patch.Attack)
+	}
+	if patch.Critical != nil {
+		add("critical", *patch.Critical)
+	}
+	if patch.Durability != nil {
+		add("durability", *patch.Durability)
+	}
+	if len(sets) == 0 {
+		return r.FindProfile(ctx, userID)
+	}
+	add("updated_at", formatTime(now))
+	args = append(args, userID)
+	result, err := r.db.ExecContext(ctx, `UPDATE resistance_profiles SET `+strings.Join(sets, ", ")+` WHERE user_id = ?`, args...)
+	if err != nil {
+		return nil, fmt.Errorf("patch resistance profile: %w", err)
+	}
+	count, _ := result.RowsAffected()
+	if count == 0 {
+		return nil, domain.ErrNotFound
+	}
+	return r.FindProfile(ctx, userID)
 }
 
 type Ally struct {

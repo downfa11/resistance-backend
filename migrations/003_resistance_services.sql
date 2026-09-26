@@ -44,7 +44,7 @@ CREATE TABLE resistance_supporter_codes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     kind TEXT NOT NULL,
     code TEXT NOT NULL UNIQUE,
-    reward_gold INTEGER NOT NULL DEFAULT 0 CHECK (reward_gold >= 0),
+    reward_gold INTEGER NOT NULL DEFAULT 0 CHECK (reward_gold BETWEEN 0 AND 1000000000000),
     status TEXT NOT NULL DEFAULT 'AVAILABLE' CHECK (status IN ('AVAILABLE', 'REDEEMED')),
     redeemed_by INTEGER NULL,
     redeemed_at TEXT NULL,

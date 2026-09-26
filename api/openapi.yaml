@@ -1,18 +1,18 @@
 openapi: 3.1.0
 info:
-  title: Arcade Server API
+  title: Resistance Server API
   version: 1.0.0
   description: |
-    Canonical HTTP contract shared by the Digimons web client and the Resistance Unity client.
-    Persistent state, rewarded battles, currency, identity, and notifications are server-authoritative.
+    Canonical HTTP contract for the Resistance Unity client.
+    Persistent game state, currency, identity, and notifications are server-authoritative.
 servers:
   - url: http://127.0.0.1:8080
+security:
+  - bearerAuth: []
 tags:
   - name: System
   - name: Identity
   - name: Notifications
-  - name: Digimons
-  - name: Digimons Admin
   - name: Resistance
   - name: Resistance Admin
 paths:
@@ -660,17 +660,12 @@ paths:
       security: []
       responses:
         '200':
-          description: Successful response
+          description: Raw published content item
           content:
-            application/json:
+            application/octet-stream:
               schema:
-                $ref: '#/components/schemas/Envelope'
-        '201':
-          description: Resource created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Envelope'
+                type: string
+                format: binary
         default:
           description: Error response
           content:

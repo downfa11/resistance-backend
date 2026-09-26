@@ -71,3 +71,28 @@ func TestOpenAPICoversEveryRegisteredRoute(t *testing.T) {
 		}
 	}
 }
+
+func TestOpenAPIDeclaresResistanceSecurityAndRawContent(t *testing.T) {
+	_, currentFile, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("resolve test source path")
+	}
+	root := filepath.Clean(filepath.Join(filepath.Dir(currentFile), "..", "..", ".."))
+	payload, err := os.ReadFile(filepath.Join(root, "api", "openapi.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	spec := string(payload)
+	for _, expected := range []string{
+		"title: Resistance Server API",
+		"security:\n  - bearerAuth: []",
+		"application/octet-stream:\n              schema:\n                type: string\n                format: binary",
+	} {
+		if !strings.Contains(spec, expected) {
+			t.Fatalf("OpenAPI contract missing %q", expected)
+		}
+	}
+	if strings.Contains(spec, "Digimons") || strings.Contains(spec, "Arcade Server") {
+		t.Fatal("OpenAPI contract still references a shared Arcade or Digimons server")
+	}
+}
